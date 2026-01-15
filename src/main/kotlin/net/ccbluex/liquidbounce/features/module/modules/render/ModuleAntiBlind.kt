@@ -1,7 +1,7 @@
 /*
  * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
  *
- * Copyright (c) 2015 - 2025 CCBlueX
+ * Copyright (c) 2015 - 2026 CCBlueX
  *
  * LiquidBounce is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.ccbluex.liquidbounce.features.module.modules.render
 import net.ccbluex.liquidbounce.config.types.NamedChoice
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
-import net.minecraft.world.item.Items
 import net.minecraft.resources.Identifier
+import net.minecraft.world.item.Items
 
 /**
  * AntiBlind module
@@ -58,7 +58,7 @@ object ModuleAntiBlind : ClientModule("AntiBlind", Category.RENDER, aliases = li
         DoRender.BOSS_BARS,
         DoRender.EXPLOSION_PARTICLES,
         DoRender.WORLD_BORDER,
-    ).also { tagBy(it) }
+    )
 
     private val fireOpacity by int("FireOpacity", 100, 0..100, suffix = "%")
 
