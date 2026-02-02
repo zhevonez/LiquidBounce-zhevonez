@@ -18,7 +18,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura.trigger
 
-import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.config.types.group.ValueGroup
 import net.ccbluex.liquidbounce.event.EventListener
 import net.ccbluex.liquidbounce.features.module.MinecraftShortcuts
 import net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura.ModuleCrystalAura
@@ -44,9 +44,9 @@ import java.util.function.BooleanSupplier
  *
  * This is basically the managing class of the crystal aura.
  *
- * Mixins: [MixinClientPlayNetworkHandler], [MixinClientPlayerInteractionManager]
+ * Mixins: [MixinClientPacketListener], [MixinMultiPlayerGameMode]
  */
-object CrystalAuraTriggerer : Configurable("Triggers"), EventListener, MinecraftShortcuts {
+object CrystalAuraTriggerer : ValueGroup("Triggers"), EventListener, MinecraftShortcuts {
 
     // avoids grim multi action flags
     private val notWhileUsingItem by boolean("NotWhileUsingItem", false)

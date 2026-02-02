@@ -18,16 +18,19 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.player
 
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
+import net.ccbluex.liquidbounce.utils.range.RangeValueGroup
 
 /**
  * Reach module
  *
  * Increases your reach.
+ *
+ * @see net.ccbluex.liquidbounce.injection.mixins.minecraft.entity.MixinPlayer
+ * @see net.ccbluex.liquidbounce.injection.mixins.minecraft.item.MixinAttackRange
  */
-
-object ModuleReach : ClientModule("Reach", Category.PLAYER) {
-    val combatReach by float("CombatReach", 4.2f, 3f..8f).apply { tagBy(this) }
-    val blockReach by float("BlockReach", 5f, 4.5f..8f)
+object ModuleReach : ClientModule("Reach", ModuleCategories.PLAYER) {
+    val entity = tree(RangeValueGroup("Entity", 1f, 0f))
+    val blockRangeIncrease by float("BlockRangeIncrease", 0.5f, 0f..64f)
 }

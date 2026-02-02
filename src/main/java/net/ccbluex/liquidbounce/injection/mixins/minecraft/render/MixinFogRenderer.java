@@ -23,9 +23,9 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleCustomAmbience;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.FogRenderer;
-import net.minecraft.client.multiplayer.ClientLevel;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,8 +38,9 @@ public abstract class MixinFogRenderer {
     @Inject(method = "computeFogColor", at = @At("HEAD"), cancellable = true)
     private void editFogColor(Camera camera, float tickProgress, ClientLevel world, int viewDistance, float skyDarkness,
         CallbackInfoReturnable<Vector4f> cir) {
-        if (ModuleCustomAmbience.FogConfigurable.INSTANCE.getRunning()) {
-            cir.setReturnValue(ModuleCustomAmbience.FogConfigurable.INSTANCE.getColor().toVector4f());
+        var fogColorOverride = ModuleCustomAmbience.FogValueGroup.FogColorOverride.INSTANCE;
+        if (fogColorOverride.getRunning()) {
+            cir.setReturnValue(fogColorOverride.getColor().toVector4f());
         }
     }
 
@@ -49,7 +50,7 @@ public abstract class MixinFogRenderer {
     )
     private void editFogData(Camera camera, int viewDistance, DeltaTracker renderTickCounter, float f,
         ClientLevel clientWorld, CallbackInfoReturnable<Vector4f> cir, @Local FogData fogData) {
-        ModuleCustomAmbience.FogConfigurable.INSTANCE.modifyFogData(fogData);
+        ModuleCustomAmbience.FogValueGroup.INSTANCE.modifyFogData(fogData);
     }
 
 }

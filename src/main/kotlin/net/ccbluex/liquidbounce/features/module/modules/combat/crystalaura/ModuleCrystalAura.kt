@@ -18,11 +18,11 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura
 
-import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.config.types.group.ValueGroup
 import net.ccbluex.liquidbounce.event.events.RotationUpdateEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura.destroy.SubmoduleCrystalDestroyer
 import net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura.place.SubmoduleCrystalPlacer
 import net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura.post.CrystalPostAttackTracker
@@ -45,7 +45,7 @@ import net.ccbluex.liquidbounce.utils.render.TargetRenderer
  */
 object ModuleCrystalAura : ClientModule(
     "CrystalAura",
-    Category.COMBAT,
+    ModuleCategories.COMBAT,
     aliases = listOf("AutoCrystal"),
     disableOnQuit = true
 ) {
@@ -54,7 +54,7 @@ object ModuleCrystalAura : ClientModule(
         rangeValue =  FloatValueProvider("Range", 4.5f, 1f..12f)
     ))
 
-    object PredictFeature : Configurable("Predict") {
+    object PredictFeature : ValueGroup("Predict") {
         init {
             treeAll(SelfPredict, TargetPredict)
         }
@@ -77,7 +77,7 @@ object ModuleCrystalAura : ClientModule(
         tree(TargetRenderer(this, targetTracker))
     }
 
-    val rotationMode = choices(this, "RotationMode") {
+    val rotationMode = modes(this, "RotationMode") {
         arrayOf(
             NormalRotationMode(it, this, Priority.IMPORTANT_FOR_USAGE_2, true),
             NoRotationMode(it, this)

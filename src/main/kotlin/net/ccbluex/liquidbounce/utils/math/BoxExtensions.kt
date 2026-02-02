@@ -20,11 +20,11 @@
 
 package net.ccbluex.liquidbounce.utils.math
 
-import net.minecraft.world.phys.AABB
 import net.minecraft.core.Direction
 import net.minecraft.core.Position
-import net.minecraft.world.phys.Vec3
 import net.minecraft.core.Vec3i
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.max
 import kotlin.math.min
@@ -70,7 +70,7 @@ fun AABB.isHitByLine(start: Vec3, p: Vec3): Boolean {
         val p0 = axis.choose(start.x, start.y, start.z)
 
         // parallel and outside, no need to check anything else
-        if (d1 == 0.0 && (p0 < min || p0 > max)) {
+        if (d1 == 0.0 && (p0 !in min..max)) {
             return true
         }
 

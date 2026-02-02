@@ -18,14 +18,14 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat.velocity.mode
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.events.PacketEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.module.modules.player.nofall.modes.NoFallBlink
 import net.ccbluex.liquidbounce.utils.entity.any
 import net.minecraft.network.protocol.common.ServerboundPongPacket
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket
 import net.minecraft.network.protocol.game.ClientboundExplodePacket
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket
 import kotlin.random.Random
 
 /**
@@ -108,9 +108,9 @@ internal object VelocityModify : VelocityMode("Modify") {
 
     @Suppress("unused")
     private enum class VelocityTriggerFilter(
-        override val choiceName: String,
+        override val tag: String,
         val allow: () -> Boolean
-    ) : NamedChoice {
+    ) : Tagged {
         ALWAYS("Always", { true }),
         ON_GROUND("OnGround", { player.onGround() }),
         IN_AIR("InAir", { !player.onGround() }),

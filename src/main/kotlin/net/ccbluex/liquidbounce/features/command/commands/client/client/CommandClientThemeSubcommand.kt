@@ -38,9 +38,9 @@ import net.ccbluex.liquidbounce.utils.client.onHover
 import net.ccbluex.liquidbounce.utils.client.regular
 import net.ccbluex.liquidbounce.utils.client.variable
 import net.ccbluex.liquidbounce.utils.client.withColor
+import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.HoverEvent
-import net.minecraft.ChatFormatting
 import net.minecraft.util.Util
 import java.net.URI
 
@@ -123,10 +123,10 @@ object CommandClientThemeSubcommand {
                     .append(regular(" by "))
                     .append(variable(theme.metadata.authors.joinToString(separator = ", ")).copyable())
                     .append(regular(" from "))
-                    .append(variable(theme.origin.choiceName))
+                    .append(variable(theme.origin.tag))
                 ).onClick(
                     ClickEvent.SuggestCommand(
-                        "${CommandManager.Options.prefix}client theme set ${theme.metadata.id}"
+                        "${CommandManager.GlobalSettings.prefix}client theme set ${theme.metadata.id}"
                     )
                 ).onHover(
                     HoverEvent.ShowText(

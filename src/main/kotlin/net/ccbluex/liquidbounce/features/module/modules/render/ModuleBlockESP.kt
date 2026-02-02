@@ -19,13 +19,12 @@
 package net.ccbluex.liquidbounce.features.module.modules.render
 
 import kotlinx.atomicfu.atomic
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
 import net.ccbluex.liquidbounce.event.events.DrawOutlinesEvent
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.render.ClientRenderPipelines
 import net.ccbluex.liquidbounce.render.GenericRainbowColorMode
 import net.ccbluex.liquidbounce.render.GenericStaticColorMode
@@ -38,7 +37,7 @@ import net.ccbluex.liquidbounce.render.drawGenericBlockESP
 import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.render.getDynamicTransformsUniform
 import net.ccbluex.liquidbounce.render.translate
-import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformConfigurable
+import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformValueGroup
 import net.ccbluex.liquidbounce.render.withPush
 import net.ccbluex.liquidbounce.utils.block.AbstractBlockLocationTracker
 import net.ccbluex.liquidbounce.utils.block.ChunkScanner
@@ -57,7 +56,7 @@ import java.util.concurrent.ConcurrentSkipListSet
  * Allows you to see selected blocks through walls.
  */
 
-object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
+object ModuleBlockESP : ClientModule("BlockESP", ModuleCategories.RENDER) {
 
     private val modes = choices("Mode", 0) {
         arrayOf(
@@ -85,9 +84,9 @@ object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
         )
     }
 
-    private val distanceFade = tree(DistanceFadeUniformConfigurable())
+    private val distanceFade = tree(DistanceFadeUniformValueGroup())
 
-    private sealed class Mode(name: String) : Choice(name) {
+    private sealed class Mode(name: String) : net.ccbluex.liquidbounce.config.types.group.Mode(name) {
         final override val parent get() = modes
 
         protected var useColor = false
@@ -106,7 +105,7 @@ object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
             colorModulator = if (useColor) {
                 Color4b.WHITE
             } else {
-                val color = colorMode.activeChoice.getColor(BlockPos.ZERO to Blocks.AIR.defaultBlockState())
+                val color = colorMode.activeMode.getColor(BlockPos.ZERO to Blocks.AIR.defaultBlockState())
                 if (colorModulatorAlpha == -1) color else color.alpha(colorModulatorAlpha)
             }
         )
@@ -165,7 +164,7 @@ object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
                 return@handler
             }
 
-            val colorMode = colorMode.activeChoice
+            val colorMode = colorMode.activeMode
             useColor = colorMode.isParamSensitive
 
             facesRenderState.buildMesh(
@@ -238,7 +237,7 @@ object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
                 return@handler
             }
 
-            val colorMode = colorMode.activeChoice
+            val colorMode = colorMode.activeMode
             useColor = colorMode.isParamSensitive
 
             renderState.buildMesh(
@@ -267,7 +266,7 @@ object ModuleBlockESP : ClientModule("BlockESP", Category.RENDER) {
     }
 
     private fun markDirtyForModes() {
-        modes.choices.forEach { it.dirtyFlag.value = true }
+        modes.modes.forEach { it.dirtyFlag.value = true }
     }
 
     private inline fun forEachTrackedBlocks(

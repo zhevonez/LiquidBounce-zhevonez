@@ -38,9 +38,9 @@ import net.ccbluex.liquidbounce.utils.inventory.HotbarItemSlot
 import net.ccbluex.liquidbounce.utils.inventory.useHotbarSlotOrOffhand
 import net.ccbluex.liquidbounce.utils.kotlin.Priority
 import net.ccbluex.liquidbounce.utils.kotlin.random
+import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.AreaEffectCloud
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.LingeringPotionItem
@@ -56,8 +56,8 @@ internal object Pot : StatusEffectBasedBuff("Pot") {
                 // Check if there is any entity that we care about that can benefit from the potion
                 // This means we will only care about entities that are our enemies and are close enough to us
                 // That means we will still throw the potion if there is a friendly friend or team member nearby
-                val benefits = world.entitiesForRendering().filterIsInstance<LivingEntity>().any {
-                    it.shouldBeAttacked() && hasBenefit(it)
+                val benefits = world.entitiesForRendering().any {
+                    it is LivingEntity && it.shouldBeAttacked() && hasBenefit(it)
                 }
 
                 if (benefits) {
@@ -90,7 +90,7 @@ internal object Pot : StatusEffectBasedBuff("Pot") {
             NORMAL -> {
                 RotationManager.setRotationTarget(
                     rotation,
-                    configurable = ModuleAutoBuff.Rotations,
+                    valueGroup = ModuleAutoBuff.Rotations,
                     provider = ModuleAutoBuff,
                     priority = Priority.IMPORTANT_FOR_PLAYER_LIFE
                 )
@@ -159,8 +159,9 @@ internal object Pot : StatusEffectBasedBuff("Pot") {
      * Check if the player is standing inside a lingering potion cloud
      */
     private fun isStandingInsideLingering() =
-        world.entitiesForRendering().filterIsInstance<AreaEffectCloud>().any {
-            it.distanceToSqr(player) <= BENEFICIAL_SQUARE_RANGE &&
+        world.entitiesForRendering().any {
+            it is AreaEffectCloud &&
+                it.distanceToSqr(player) <= BENEFICIAL_SQUARE_RANGE &&
                 it.potionContents.allEffects.any { effect ->
                 effect.effect == MobEffects.REGENERATION || effect.effect == MobEffects.INSTANT_HEALTH
                     || effect.effect == MobEffects.STRENGTH
@@ -171,8 +172,9 @@ internal object Pot : StatusEffectBasedBuff("Pot") {
      * Check if splash potion is nearby to prevent throwing a potion that is not needed
      */
     private fun isSplashNearby() =
-        world.entitiesForRendering().filterIsInstance<AbstractThrownPotion>().any {
-            it.distanceToSqr(player) <= BENEFICIAL_SQUARE_RANGE
+        world.entitiesForRendering().any {
+            it is AbstractThrownPotion &&
+                it.distanceToSqr(player) <= BENEFICIAL_SQUARE_RANGE
         }
 
 }

@@ -18,7 +18,7 @@
  */
 package net.ccbluex.liquidbounce.script.bindings.api
 
-import net.ccbluex.liquidbounce.utils.aiming.utils.raycast
+import net.ccbluex.liquidbounce.utils.block.SwingMode
 import net.ccbluex.liquidbounce.utils.block.doPlacement
 import net.ccbluex.liquidbounce.utils.block.targetfinding.BlockOffsetOptions
 import net.ccbluex.liquidbounce.utils.block.targetfinding.BlockPlacementTargetFindingOptions
@@ -28,23 +28,24 @@ import net.ccbluex.liquidbounce.utils.block.targetfinding.PlayerLocationOnPlacem
 import net.ccbluex.liquidbounce.utils.block.targetfinding.findBestBlockPlacementTarget
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.player
-import net.ccbluex.liquidbounce.utils.combat.attack
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.InteractionHand
-import net.minecraft.world.phys.HitResult
+import net.ccbluex.liquidbounce.utils.combat.attackEntity
+import net.ccbluex.liquidbounce.utils.raytracing.traceFromPlayer
 import net.minecraft.core.BlockPos
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.phys.HitResult
 
 @Suppress("unused")
 object ScriptInteractionUtil {
 
     @JvmName("attackEntity")
-    fun attackEntity(entity: Entity, swing: Boolean, keepSprint: Boolean) {
+    fun attackEntityJs(entity: Entity, swing: Boolean, keepSprint: Boolean) {
         // Safety check
         if (entity == mc.player) {
             return
         }
 
-        entity.attack(swing, keepSprint)
+        attackEntity(entity, if (swing) SwingMode.DO_NOT_HIDE else SwingMode.HIDE_BOTH, keepSprint)
     }
 
     @JvmName("interactEntity")
@@ -81,7 +82,7 @@ object ScriptInteractionUtil {
             ?: return false
 
         // Check if block is reachable to the player
-        val rayTraceResult = raycast(bestPlacement.rotation)
+        val rayTraceResult = traceFromPlayer(bestPlacement.rotation)
 
         // If the type we are aiming at is not a block, we can't place it
         if (rayTraceResult.type != HitResult.Type.BLOCK) {

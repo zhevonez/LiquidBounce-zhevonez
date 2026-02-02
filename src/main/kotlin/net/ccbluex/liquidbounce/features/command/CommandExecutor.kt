@@ -49,8 +49,8 @@ import net.ccbluex.liquidbounce.utils.client.removeMessage
 import net.ccbluex.liquidbounce.utils.client.variable
 import net.ccbluex.liquidbounce.utils.kotlin.EventPriorityConvention
 import net.ccbluex.liquidbounce.utils.kotlin.MinecraftDispatcher
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.ClickEvent
 import okio.appendingSink
 import okio.buffer
 import java.io.File
@@ -161,7 +161,7 @@ object CommandExecutor : EventListener {
                     // ⬥ .friend add <name> [<alias>]
                     // ⬥ .friend remove <name>
                     for (usage in e.usageInfo) {
-                        val prefix = CommandManager.Options.prefix
+                        val prefix = CommandManager.GlobalSettings.prefix
                         val text = regular("")
                             .append("\u2B25 ".asPlainText(ChatFormatting.BLUE))
                             .append(regular(prefix))
@@ -198,11 +198,11 @@ object CommandExecutor : EventListener {
      */
     @Suppress("unused")
     private val chatEventHandler = handler<ChatSendEvent>(priority = EventPriorityConvention.FIRST_PRIORITY) {
-        if (!it.message.startsWith(CommandManager.Options.prefix)) {
+        if (!it.message.startsWith(CommandManager.GlobalSettings.prefix)) {
             return@handler
         }
 
-        val commandBody = it.message.substring(CommandManager.Options.prefix.length)
+        val commandBody = it.message.substring(CommandManager.GlobalSettings.prefix.length)
         try {
             CommandManager.execute(commandBody)
         } catch (e: Throwable) {

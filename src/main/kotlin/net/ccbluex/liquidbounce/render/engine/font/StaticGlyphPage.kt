@@ -20,7 +20,7 @@
 package net.ccbluex.liquidbounce.render.engine.font
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
-import net.ccbluex.liquidbounce.render.FontManager
+import net.ccbluex.liquidbounce.render.engine.FontId
 import net.ccbluex.liquidbounce.render.engine.font.GlyphPage.Companion.CharacterGenerationInfo
 import net.ccbluex.liquidbounce.render.engine.font.StaticGlyphPage.Companion.createGlyphPageWithFittingCharacters
 import net.ccbluex.liquidbounce.utils.client.logger
@@ -34,11 +34,11 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * A staticly allocated glyph page.
+ * A statically allocated glyph page.
  */
 class StaticGlyphPage(
     override val texture: DynamicTexture,
-    val glyphs: Set<Pair<FontManager.FontId, GlyphRenderInfo>>
+    val glyphs: Set<Pair<FontId, GlyphRenderInfo>>
 ): GlyphPage() {
     companion object {
         @JvmStatic
@@ -192,7 +192,7 @@ class StaticGlyphPage(
                 currentX += allocationSize.width
             }
 
-            // Return the dimension and match it's requirement of being at least (1, 1)
+            // Return the dimension and match its requirement of being at least (1, 1)
             return Dimension(max(1, maxWidth), max(1, currentY + currentLineMaxHeight))
         }
     }

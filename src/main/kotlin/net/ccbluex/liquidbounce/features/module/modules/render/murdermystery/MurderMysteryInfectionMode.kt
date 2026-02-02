@@ -19,28 +19,27 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.render.murdermystery
 
-import net.ccbluex.liquidbounce.event.tickHandler
+import net.ccbluex.liquidbounce.event.events.GameTickEvent
+import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.handItems
 import net.minecraft.client.player.AbstractClientPlayer
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.BowItem
 import net.minecraft.world.item.Items
-import net.minecraft.resources.Identifier
 
 object MurderMysteryInfectionMode : SkinBasedMurderMysteryMode("Infection") {
 
-    val rep =
-        tickHandler {
-            world.players()
-                .filterIsInstance<AbstractClientPlayer>()
-                .filter {
-                    it.isUsingItem && player.handItems.any { stack -> stack.item is BowItem } ||
-                        player.handItems.any { stack -> stack.item == Items.ARROW }
-                }
-                .forEach { playerEntity ->
-                    handleHasBow(playerEntity, playerEntity.skin.body.texturePath())
-                }
-        }
+    val tickHandler = handler<GameTickEvent> {
+        world.players()
+            .filter {
+                it.isUsingItem && player.handItems.any { stack -> stack.item is BowItem } ||
+                    player.handItems.any { stack -> stack.item == Items.ARROW }
+            }
+            .forEach { playerEntity ->
+                handleHasBow(playerEntity, playerEntity.skin.body.texturePath())
+            }
+    }
 
     override fun handleHasSword(
         entity: AbstractClientPlayer,

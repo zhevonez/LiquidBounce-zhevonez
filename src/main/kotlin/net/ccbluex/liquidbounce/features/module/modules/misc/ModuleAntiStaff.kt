@@ -27,13 +27,12 @@ import net.ccbluex.liquidbounce.event.events.ServerConnectEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.event.tickUntil
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.utils.client.MessageMetadata
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.dropPort
 import net.ccbluex.liquidbounce.utils.client.inGame
-import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.notification
 import net.ccbluex.liquidbounce.utils.client.rootDomain
 import net.ccbluex.liquidbounce.utils.client.warning
@@ -42,7 +41,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket
 /**
  * Notifies you about staff actions.
  */
-object ModuleAntiStaff : ClientModule("AntiStaff", Category.MISC) {
+object ModuleAntiStaff : ClientModule("AntiStaff", ModuleCategories.MISC) {
 
     private val showInTabList by boolean("ShowInTabList", true)
     private val serverStaffList = hashMapOf<String, Set<String>>()
@@ -116,7 +115,7 @@ object ModuleAntiStaff : ClientModule("AntiStaff", Category.MISC) {
     }
 
     fun shouldShowAsStaffOnTab(username: String): Boolean {
-        if (!showInTabList || !ModuleAntiStaff.running || !enabled) {
+        if (!showInTabList || !running || !enabled) {
             return false
         }
 

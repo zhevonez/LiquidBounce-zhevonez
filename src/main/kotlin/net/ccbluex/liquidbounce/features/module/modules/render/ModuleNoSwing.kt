@@ -18,24 +18,24 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
-import net.ccbluex.liquidbounce.features.module.Category
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 
 /**
  * NoSwing module
  *
  * Disables the swing effect.
  */
-object ModuleNoSwing : ClientModule("NoSwing", Category.RENDER) {
+object ModuleNoSwing : ClientModule("NoSwing", ModuleCategories.RENDER) {
     private val hideFor by multiEnumChoice("HideFor", HideFor.entries)
 
     fun shouldHideForServer() = this.running && HideFor.SERVER in hideFor
     fun shouldHideForClient() = this.running && HideFor.CLIENT in hideFor
 
     private enum class HideFor(
-        override val choiceName: String
-    ) : NamedChoice {
+        override val tag: String
+    ) : Tagged {
         CLIENT("Client"),
         SERVER("Server")
     }

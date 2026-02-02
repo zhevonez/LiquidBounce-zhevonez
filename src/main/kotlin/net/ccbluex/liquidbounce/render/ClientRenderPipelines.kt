@@ -31,7 +31,7 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.ccbluex.fastutil.fastIterator
 import net.ccbluex.liquidbounce.LiquidBounce
-import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformConfigurable
+import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformValueGroup
 import net.ccbluex.liquidbounce.utils.client.gpuDevice
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.minecraft.client.renderer.RenderPipelines
@@ -172,6 +172,16 @@ object ClientRenderPipelines {
         fun triangles(cull: Boolean) = if (cull) Triangles else TrianglesNoCull
     }
 
+    /**
+     * @see RenderPipelines.LINES_TRANSLUCENT
+     */
+    @JvmField
+    val LinesWithWidth = newPipeline("lines_with_width") {
+        withSnippet(RenderPipelines.LINES_SNIPPET)
+        withDepthWrite(false)
+        forWorldRender()
+    }
+
     @JvmField
     val Lines = newPipeline("lines") {
         withSnippet(RenderPipelines.DEBUG_FILLED_SNIPPET)
@@ -182,14 +192,14 @@ object ClientRenderPipelines {
     private val LinesRelativeToCamera = newPipeline("lines_relative_to_camera") {
         withSnippet(RenderPipelines.DEBUG_FILLED_SNIPPET)
         relativePosColor(VertexFormat.Mode.DEBUG_LINES)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         forWorldRender()
     }
 
     private val LinesRelativeToCameraNoColor = newPipeline("lines_relative_to_camera_no_color") {
         withSnippet(RenderPipelines.DEBUG_FILLED_SNIPPET)
         relativePosColor(VertexFormat.Mode.DEBUG_LINES)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         forWorldRender()
     }
 
@@ -227,14 +237,14 @@ object ClientRenderPipelines {
     private val QuadsRelativeToCamera = newPipeline("quads_relative_to_camera") {
         withSnippet(RenderPipelines.DEBUG_FILLED_SNIPPET)
         relativePosColor(VertexFormat.Mode.QUADS)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         forWorldRender()
     }
 
     private val QuadsRelativeToCameraNoColor = newPipeline("quads_relative_to_camera_no_color") {
         withSnippet(RenderPipelines.DEBUG_FILLED_SNIPPET)
         relativePos(VertexFormat.Mode.QUADS)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         forWorldRender()
     }
 
@@ -250,7 +260,7 @@ object ClientRenderPipelines {
         withSnippet(RenderPipelines.GLOBALS_SNIPPET)
         withVertexShader(ClientShaders.Vertex.PosColorRelativeToCamera)
         withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         withBlend(COVERING_BLEND)
     }
 
@@ -260,7 +270,7 @@ object ClientRenderPipelines {
         withVertexShader(ClientShaders.Vertex.PosRelativeToCamera)
         withFragmentShader(ClientShaders.Fragment.PosRelativeToCamera)
         withVertexFormat(DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS)
-        withUniform(DistanceFadeUniformConfigurable.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
+        withUniform(DistanceFadeUniformValueGroup.UNIFORM_NAME, UniformType.UNIFORM_BUFFER)
         withBlend(COVERING_BLEND)
     }
 
@@ -310,7 +320,8 @@ object ClientRenderPipelines {
         withSampler("overlay")
         withUniform("BlurData", UniformType.UNIFORM_BUFFER)
         withoutBlend()
-        withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+        withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+        withDepthWrite(false)
     }
 
     @JvmField

@@ -26,31 +26,31 @@ import net.ccbluex.liquidbounce.utils.client.isOlderThanOrEqual1_8
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.player
 import net.ccbluex.liquidbounce.utils.client.regular
+import net.ccbluex.liquidbounce.utils.entity.handItems
 import net.ccbluex.liquidbounce.utils.inventory.Slots
 import net.ccbluex.liquidbounce.utils.kotlin.unmodifiable
-import net.minecraft.world.level.block.Block
 import net.minecraft.commands.arguments.item.ItemInput
 import net.minecraft.commands.arguments.item.ItemParser
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Holder
+import net.minecraft.core.component.DataComponentGetter
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.item.component.ItemAttributeModifiers
-import net.minecraft.world.item.alchemy.PotionContents
-import net.minecraft.world.item.enchantment.Enchantment
-import net.minecraft.world.item.enchantment.EnchantmentHelper
-import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.ai.attributes.Attribute
 import net.minecraft.world.entity.ai.attributes.AttributeInstance
 import net.minecraft.world.entity.ai.attributes.Attributes
-import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.item.ArmorStandItem
 import net.minecraft.world.item.ArrowItem
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.BoatItem
+import net.minecraft.world.item.BottleItem
 import net.minecraft.world.item.BowItem
 import net.minecraft.world.item.BrushItem
 import net.minecraft.world.item.BucketItem
 import net.minecraft.world.item.CrossbowItem
-import net.minecraft.world.item.HangingEntityItem
 import net.minecraft.world.item.EggItem
 import net.minecraft.world.item.EmptyMapItem
 import net.minecraft.world.item.EnderEyeItem
@@ -60,7 +60,7 @@ import net.minecraft.world.item.FireChargeItem
 import net.minecraft.world.item.FireworkRocketItem
 import net.minecraft.world.item.FishingRodItem
 import net.minecraft.world.item.FlintAndSteelItem
-import net.minecraft.world.item.BottleItem
+import net.minecraft.world.item.HangingEntityItem
 import net.minecraft.world.item.InstrumentItem
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -68,7 +68,6 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.KnowledgeBookItem
 import net.minecraft.world.item.PlaceOnWaterBlockItem
 import net.minecraft.world.item.PotionItem
-import net.minecraft.world.item.ShieldItem
 import net.minecraft.world.item.SnowballItem
 import net.minecraft.world.item.SpawnEggItem
 import net.minecraft.world.item.SpyglassItem
@@ -76,11 +75,15 @@ import net.minecraft.world.item.TridentItem
 import net.minecraft.world.item.WindChargeItem
 import net.minecraft.world.item.WritableBookItem
 import net.minecraft.world.item.WrittenBookItem
-import net.minecraft.resources.ResourceKey
-import net.minecraft.core.registries.Registries
-import net.minecraft.core.Holder
-import net.minecraft.core.BlockPos
-import java.util.*
+import net.minecraft.world.item.alchemy.PotionContents
+import net.minecraft.world.item.component.ItemAttributeModifiers
+import net.minecraft.world.item.component.UseEffects
+import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.level.block.Block
+import org.apache.commons.lang3.function.Consumers
+import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -105,44 +108,20 @@ fun createSplashPotion(name: String, vararg effects: MobEffectInstance): ItemSta
     return itemStack
 }
 
-fun ItemStack?.getEnchantmentCount(): Int {
-    val enchantments = this?.get(DataComponents.ENCHANTMENTS) ?: return 0
-
-    return enchantments.size()
-}
-
-fun ItemStack?.getEnchantment(enchantment: ResourceKey<Enchantment>): Int {
-    val enchantments = this?.get(DataComponents.ENCHANTMENTS) ?: return 0
-
-    return enchantments.getLevel(enchantment.toRegistryEntryOrNull() ?: return 0)
-}
-
 /**
  * @return if this item stack has same [Item] and [net.minecraft.core.component.DataComponentPatch]
  * with the other item stack
  */
-fun ItemStack.isMergeable(other: ItemStack): Boolean {
-    return this.item == other.item && this.componentsPatch == other.componentsPatch
-}
+inline fun ItemStack.isMergeable(other: ItemStack): Boolean = ItemStack.isSameItemSameComponents(this, other)
 
 fun ItemStack.canMerge(other: ItemStack): Boolean {
     return this.isMergeable(other) && this.count + other.count <= this.maxStackSize
 }
 
-fun ItemStack.getAttributeValue(attribute: Holder<Attribute>) = item.components()
-    .getOrDefault(
-        DataComponents.ATTRIBUTE_MODIFIERS,
-        ItemAttributeModifiers.EMPTY
-    )
-    .modifiers
-    .filter { modifier -> modifier.attribute == attribute }
-    .firstNotNullOfOrNull { modifier -> modifier.modifier.amount }
-
 val ItemStack.attackDamage: Double
     get() {
         val entityBaseDamage = player.getAttributeValue(Attributes.ATTACK_DAMAGE)
-        val baseDamage = getAttributeValue(Attributes.ATTACK_DAMAGE)
-            ?: return 0.0
+        val baseDamage = getAttributeValue(Attributes.ATTACK_DAMAGE, EquipmentSlot.MAINHAND)
 
         /*
          * Client-side damage calculation for enchantments does not exist anymore
@@ -156,16 +135,8 @@ val ItemStack.attackDamage: Double
         return entityBaseDamage + baseDamage + getSharpnessDamage()
     }
 
-val ItemStack.sharpnessLevel: Int
-    get() {
-        return EnchantmentHelper.getItemEnchantmentLevel(
-            Enchantments.SHARPNESS.toRegistryEntryOrNull() ?: return 0,
-            this
-        )
-    }
-
 @JvmOverloads
-fun ItemStack.getSharpnessDamage(level: Int = sharpnessLevel): Double =
+fun ItemStack.getSharpnessDamage(level: Int = getEnchantment(Enchantments.SHARPNESS)): Double =
     if (!isOlderThanOrEqual1_8) {
         when (level) {
             0 -> 0.0
@@ -176,37 +147,28 @@ fun ItemStack.getSharpnessDamage(level: Int = sharpnessLevel): Double =
     }
 
 val ItemStack.attackSpeed: Double
-    get() = item.getAttributeValue(Attributes.ATTACK_SPEED)
+    get() = getAttributeValue(Attributes.ATTACK_SPEED, EquipmentSlot.MAINHAND)
 
 val ItemStack.durability
     get() = this.maxDamage - this.damageValue
 
-private fun Item.getAttributeValue(attribute: Holder<Attribute>): Double {
-    val attribInstance = AttributeInstance(attribute) {}
+@JvmOverloads
+fun DataComponentGetter.getAttributeValue(attribute: Holder<Attribute>, slot: EquipmentSlot? = null): Double {
+    val attributeModifiers = this[DataComponents.ATTRIBUTE_MODIFIERS] ?: return 0.0
 
-    this.components()
-        .getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
-        .forEach(EquipmentSlot.MAINHAND) { attrib, modifier ->
-            if (attrib != attribute) {
-                return@forEach
-            }
+    val attribInstance = AttributeInstance(attribute, Consumers.nop())
 
-            attribInstance.addTransientModifier(modifier)
+    for (entry in attributeModifiers.modifiers) {
+        if ((slot?.let(entry.slot::test) ?: true) && entry.attribute == attribute) {
+            attribInstance.addTransientModifier(entry.modifier)
         }
+    }
 
     return attribInstance.value
 }
 
 fun ResourceKey<Enchantment>.toRegistryEntryOrNull(): Holder<Enchantment>? {
     return mc.level?.registryAccess()?.lookup(Registries.ENCHANTMENT)?.getOrNull()?.get(this)?.getOrNull()
-}
-
-fun ResourceKey<Enchantment>.toRegistryEntry(): Holder<Enchantment> {
-    val world = mc.level
-    requireNotNull(world) { "World is null" }
-
-    val registry = world.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-    return registry.get(this).orElseThrow { IllegalArgumentException("Unknown enchantment key $this") }
 }
 
 /**
@@ -218,7 +180,7 @@ fun ItemStack.getBlock(): Block? {
         return null
     }
 
-   return item.block
+    return item.block
 }
 
 fun ItemStack.isFullBlock(): Boolean {
@@ -231,16 +193,20 @@ fun ItemStack.isInteractable(): Boolean {
         return false
     }
 
-    return this.get(DataComponents.EQUIPPABLE) != null // TODO: curse of binding
-        || this.get(DataComponents.CONSUMABLE) != null
+    return this.get(DataComponents.EQUIPPABLE)
+        ?.let { player.getItemBySlot(it.slot).getEnchantment(Enchantments.BINDING_CURSE) != 0 } ?: false
+        || this.has(DataComponents.CONSUMABLE)
+        || this.has(DataComponents.BLOCKS_ATTACKS) // Shield, 1.8 Sword
+        || this.has(DataComponents.KINETIC_WEAPON) // Spear
+        || this.get(DataComponents.USE_EFFECTS).let { it != null && it != UseEffects.DEFAULT }
 
         // from the use() method:
         || item is BoatItem
         || (item is BowItem && Slots.All.any { it.itemStack.item is ArrowItem })
         || item is BucketItem // TODO: water/lava between an interactable block and the player (for empty buckets)
         || (item is CrossbowItem &&
-            (Slots.All.any { it.itemStack.item is ArrowItem }
-                || player.offhandItem.item is FireworkRocketItem))
+        (Slots.All.any { it.itemStack.item is ArrowItem }
+            || player.handItems.any { it.item is FireworkRocketItem }))
         || item is EggItem
         || item is EmptyMapItem
         || item is EnderEyeItem
@@ -251,9 +217,7 @@ fun ItemStack.isInteractable(): Boolean {
         || item is BottleItem // TODO: water between an interactable block and the player
         || item is InstrumentItem // TODO: item delay?
         || item is KnowledgeBookItem
-        || (isSword && isOlderThanOrEqual1_8)
         || item is PlaceOnWaterBlockItem // TODO: water between an interactable block and the player
-        || item is ShieldItem
         || item is SnowballItem
         || item is SpawnEggItem
         || item is SpyglassItem

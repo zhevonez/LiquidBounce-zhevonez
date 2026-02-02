@@ -18,13 +18,13 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.events.MouseRotationEvent
 import net.ccbluex.liquidbounce.event.events.RotationUpdateEvent
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.combat.killaura.KillAuraRequirements
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleDebug
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleDebug.debugGeometry
@@ -54,7 +54,7 @@ import net.minecraft.world.entity.Entity
  *
  * Automatically faces selected entities around you.
  */
-object ModuleAimbot : ClientModule("Aimbot", Category.COMBAT, aliases = listOf("AimAssist", "AutoAim")) {
+object ModuleAimbot : ClientModule("Aimbot", ModuleCategories.COMBAT, aliases = listOf("AimAssist", "AutoAim")) {
 
     private val range = float("Range", 4.2f, 1f..8f)
 
@@ -70,7 +70,7 @@ object ModuleAimbot : ClientModule("Aimbot", Category.COMBAT, aliases = listOf("
     private val requirementsMet
         get() = requires.all { it.asBoolean }
 
-    private var angleSmooth = choices(this, "AngleSmooth") {
+    private var angleSmooth = modes(this, "AngleSmooth") {
         arrayOf(
             InterpolationAngleSmooth(it),
             SigmoidAngleSmooth(it),
@@ -94,11 +94,11 @@ object ModuleAimbot : ClientModule("Aimbot", Category.COMBAT, aliases = listOf("
         }
 
         targetRotation = findNextTargetRotation()?.let { (target, rotation) ->
-            angleSmooth.activeChoice.process(
+            angleSmooth.activeMode.process(
                 RotationTarget(
                     rotation = rotation.rotation,
                     entity = target,
-                    processors = listOf(angleSmooth.activeChoice),
+                    processors = listOf(angleSmooth.activeMode),
                     ticksUntilReset = 1,
                     resetThreshold = 1f,
                     considerInventory = true,
@@ -188,8 +188,8 @@ object ModuleAimbot : ClientModule("Aimbot", Category.COMBAT, aliases = listOf("
     }
 
     private enum class IgnoreOpened(
-        override val choiceName: String
-    ) : NamedChoice {
+        override val tag: String
+    ) : Tagged {
         SCREEN("Screen"),
         CONTAINER("Container")
     }

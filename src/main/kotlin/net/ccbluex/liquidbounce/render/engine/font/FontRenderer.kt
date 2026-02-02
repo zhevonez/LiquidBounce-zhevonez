@@ -23,10 +23,10 @@ import it.unimi.dsi.fastutil.ints.IntStack
 import net.ccbluex.liquidbounce.features.module.modules.misc.nameprotect.sanitizeForeignInput
 import net.ccbluex.liquidbounce.render.AbstractFontRenderer
 import net.ccbluex.liquidbounce.render.ClientRenderPipelines
-import net.ccbluex.liquidbounce.render.FontManager
+import net.ccbluex.liquidbounce.render.FontFace
 import net.ccbluex.liquidbounce.render.FontManager.DEFAULT_FONT_SIZE
 import net.ccbluex.liquidbounce.render.WorldRenderEnvironment
-import net.ccbluex.liquidbounce.render.color
+import net.ccbluex.liquidbounce.render.setColor
 import net.ccbluex.liquidbounce.render.drawCustomMesh
 import net.ccbluex.liquidbounce.render.drawCustomMeshTextured
 import net.ccbluex.liquidbounce.render.drawGlyphOnCurrentLayer
@@ -51,7 +51,7 @@ class FontRenderer(
      *
      * [Font.BOLD] | [Font.ITALIC] -> 3 (Can be null)
      */
-    val font: FontManager.FontFace,
+    val font: FontFace,
     val glyphManager: FontGlyphPageManager,
     override val size: Float = DEFAULT_FONT_SIZE
 ) : AbstractFontRenderer<MinecraftTextProcessor.RecyclingProcessedText>() {
@@ -60,9 +60,9 @@ class FontRenderer(
     private val underlinesIdxStack = IntArrayList()
     private val strikethroughIdxStack = IntArrayList()
 
-    override val height: Float = font.styles.firstNotNullOf { it?.height }
+    override val height: Float = font.plainStyle.height
 
-    private val ascent: Float = font.styles.firstNotNullOf { it?.ascent }
+    private val ascent: Float = font.plainStyle.ascent
 
     private val shadowColor = Color4b(0, 0, 0, 150)
 
@@ -262,10 +262,10 @@ class FontRenderer(
             (ctx as WorldRenderEnvironment).drawCustomMesh(ClientRenderPipelines.Quads) { matrix ->
                 val y0 = y
                 val y1 = y + 1f
-                addVertex(matrix, x0, y0, z).color(color)
-                addVertex(matrix, x0, y1, z).color(color)
-                addVertex(matrix, x1, y1, z).color(color)
-                addVertex(matrix, x1, y0, z).color(color)
+                addVertex(matrix, x0, y0, z).setColor(color)
+                addVertex(matrix, x0, y1, z).setColor(color)
+                addVertex(matrix, x1, y1, z).setColor(color)
+                addVertex(matrix, x1, y0, z).setColor(color)
             }
         }
     }
@@ -288,7 +288,7 @@ class FontRenderer(
             val y1 = y + (renderInfo.glyphBounds.yMin + renderInfo.atlasLocation.atlasHeight) * scale
             val uv1 = renderInfo.atlasLocation.uvCoordinatesOnTexture.min
             val uv2 = renderInfo.atlasLocation.uvCoordinatesOnTexture.max
-            val argb = color.toARGB()
+            val argb = color.argb
 
             if (z.isNaN()) {
                 (ctx as GuiGraphics).drawGlyphOnCurrentLayer(

@@ -29,9 +29,9 @@ import net.ccbluex.liquidbounce.utils.block.getState
 import net.ccbluex.liquidbounce.utils.client.asPlainText
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.math.toBlockPos
+import net.minecraft.ChatFormatting
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument
-import net.minecraft.ChatFormatting
 
 object NotebotScanner : MinecraftShortcuts {
     fun scanBlocksAndCheckRequirements(songData: SongData): BlocksAndRequirements {
@@ -64,7 +64,7 @@ object NotebotScanner : MinecraftShortcuts {
     // since a song tick != a game tick thus this is technically incorrect but works well enough
     // it has the advantage that we don't get super huge requirements for very fast songs -
     // and well playing the same sound multiple times a tick due to minecraft's limitations
-    // would sound weird anyways
+    // would sound weird anyway
     private fun calculateRequirements(songData: SongData): Object2IntMap<InstrumentNote> {
         val maxConcurrentCounts = Object2IntOpenHashMap<InstrumentNote>()
         val countsInTick = Object2IntOpenHashMap<InstrumentNote>()

@@ -19,7 +19,7 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.computedOn
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.RotationUpdateEvent
@@ -27,15 +27,15 @@ import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.tickConditional
 import net.ccbluex.liquidbounce.event.tickHandler
 import net.ccbluex.liquidbounce.event.waitTicks
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.combat.killaura.KillAuraRequirements
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleFreeze
 import net.ccbluex.liquidbounce.features.module.modules.player.ModuleBlink
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleDebug.debugParameter
 import net.ccbluex.liquidbounce.features.module.modules.world.scaffold.ModuleScaffold
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
-import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
+import net.ccbluex.liquidbounce.utils.aiming.RotationsValueGroup
 import net.ccbluex.liquidbounce.utils.aiming.data.Rotation
 import net.ccbluex.liquidbounce.utils.aiming.point.PointTracker
 import net.ccbluex.liquidbounce.utils.aiming.projectiles.SituationalProjectileAngleCalculator
@@ -67,7 +67,7 @@ import java.util.function.Function
 /**
  * Auto use fishing rod for combat.
  */
-object ModuleAutoRod : ClientModule("AutoRod", Category.COMBAT) {
+object ModuleAutoRod : ClientModule("AutoRod", ModuleCategories.COMBAT) {
 
     private val gravityType by enumChoice("GravityType", GravityType.LINEAR)
     private val range by floatRange("Range", 3.5f..5f, 2f..10f)
@@ -89,7 +89,7 @@ object ModuleAutoRod : ClientModule("AutoRod", Category.COMBAT) {
     private val targetTracker = tree(TargetTracker(TargetPriority.DISTANCE))
     private val pointTracker = tree(PointTracker(this))
 
-    private val rotationConfigurable = tree(RotationsConfigurable(this))
+    private val rotations = tree(RotationsValueGroup(this))
     private val aimOffThreshold by float("AimOffThreshold", 5f, 2f..10f)
 
     private val swingMode by enumChoice("SwingMode", SwingMode.DO_NOT_HIDE)
@@ -149,7 +149,7 @@ object ModuleAutoRod : ClientModule("AutoRod", Category.COMBAT) {
 
         val rotation = gravityType.apply(target) ?: return@handler
         RotationManager.setRotationTarget(
-            rotationConfigurable.toRotationTarget(rotation, considerInventory = false),
+            rotations.toRotationTarget(rotation, considerInventory = false),
             Priority.IMPORTANT_FOR_USAGE_1,
             this
         )
@@ -215,7 +215,7 @@ object ModuleAutoRod : ClientModule("AutoRod", Category.COMBAT) {
         SilentHotbar.resetSlot(this)
     }
 
-    private enum class GravityType(override val choiceName: String) : NamedChoice, Function<LivingEntity, Rotation?> {
+    private enum class GravityType(override val tag: String) : Tagged, Function<LivingEntity, Rotation?> {
         LINEAR("Linear"),
         PROJECTILE("Projectile");
 
@@ -234,7 +234,7 @@ object ModuleAutoRod : ClientModule("AutoRod", Category.COMBAT) {
         }
     }
 
-    private enum class Ignore(override val choiceName: String) : NamedChoice, BooleanSupplier {
+    private enum class Ignore(override val tag: String) : Tagged, BooleanSupplier {
         OPEN_INVENTORY("OpenInventory"),
         USING_ITEM("UsingItem"),
         HOLDING_CONSUMABLE("HoldingConsumable");

@@ -18,9 +18,12 @@
  */
 package net.ccbluex.liquidbounce.integration.theme
 
+import com.mojang.blaze3d.buffers.GpuBuffer
 import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
+import com.mojang.blaze3d.platform.NativeImage
+import com.mojang.blaze3d.shaders.UniformType
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.textures.FilterMode
 import com.mojang.blaze3d.textures.GpuTexture
@@ -29,22 +32,22 @@ import com.mojang.blaze3d.textures.TextureFormat
 import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.render.ClientRenderPipelines.screenQuad
 import net.ccbluex.liquidbounce.render.createRenderPass
+import net.ccbluex.liquidbounce.render.drawBlitOnCurrentLayer
 import net.ccbluex.liquidbounce.render.drawTexQuad
 import net.ccbluex.liquidbounce.utils.client.gpuDevice
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.render.asTexture
+import net.ccbluex.liquidbounce.utils.render.asTextureSetup
 import net.ccbluex.liquidbounce.utils.render.asView
-import net.ccbluex.liquidbounce.utils.render.createUbo
+import net.ccbluex.liquidbounce.utils.render.std140Size
 import net.ccbluex.liquidbounce.utils.render.textureSetup
 import net.ccbluex.liquidbounce.utils.render.writeStd140
-import com.mojang.blaze3d.shaders.UniformType
 import net.minecraft.client.gui.GuiGraphics
-import com.mojang.blaze3d.platform.NativeImage
-import net.ccbluex.liquidbounce.render.drawBlitOnCurrentLayer
 import net.minecraft.client.gui.render.TextureSetup
+import net.minecraft.client.renderer.MappableRingBuffer
 import net.minecraft.resources.Identifier
 import java.io.Closeable
-import java.util.*
+import java.util.Locale
 
 sealed interface ThemeBackground : Closeable {
 
@@ -110,11 +113,11 @@ sealed interface ThemeBackground : Closeable {
         private val fragmentShader: String,
     ) : ThemeBackground {
 
-        private val ubo = gpuDevice.createUbo(
-            labelGetter = { "ThemeShaderBackground UBO - ${metadata.name}" }
-        ) { float + vec2 + vec2 }
-
-        private val uboSlice = ubo.slice()
+        private val ubo = MappableRingBuffer(
+            { "ThemeShaderBackground UBO - ${metadata.name}" },
+            GpuBuffer.USAGE_MAP_WRITE or GpuBuffer.USAGE_UNIFORM,
+            std140Size { float + vec2 + vec2 },
+        )
 
         private var background: GpuTexture? = null
         private var backgroundView: GpuTextureView? = null
@@ -131,6 +134,8 @@ sealed interface ThemeBackground : Closeable {
             val framebufferWidth = mc.window.width
             val framebufferHeight = mc.window.height
 
+            ubo.rotate()
+            val uboSlice = ubo.currentBuffer().slice()
             uboSlice.writeStd140 {
                 putFloat((System.currentTimeMillis() - mc.clientStartTimeMs) / 1000F)
                 putVec2(mouseX.toFloat(), mouseY.toFloat())
@@ -191,15 +196,14 @@ sealed interface ThemeBackground : Closeable {
                 )
                 backgroundView?.close()
                 backgroundView = background!!.asView()
-                textureSetup = TextureSetup.singleTexture(
-                    backgroundView!!,
-                    RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST),
-                )
+                textureSetup = backgroundView!!.asTextureSetup(SAMPLER)
             }
         }
 
         companion object {
             private const val UNIFORM_NAME = "ThemeBackgroundData"
+            @JvmStatic
+            private val SAMPLER = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)
 
             @JvmStatic
             fun build(

@@ -19,9 +19,9 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.render.hats
 
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
-import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
+import net.ccbluex.liquidbounce.config.types.group.ValueGroup
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.misc.FriendManager
@@ -46,8 +46,8 @@ private val ROTATION = Quaternionf()
 /**
  * @author minecrrrr
  */
-abstract class HatsMode(name: String) : Choice(name) {
-    final override val parent: ChoiceConfigurable<*>
+abstract class HatsMode(name: String) : Mode(name) {
+    final override val parent: ModeValueGroup<*>
         get() = modes
 
     // --- Settings ---
@@ -55,22 +55,22 @@ abstract class HatsMode(name: String) : Choice(name) {
 
     protected val height by float("HeightOffset", 0.2f, 0f..2f)
 
-    protected object EquipOffset : Configurable("EquipmentOffset") {
+    private class EquipOffset : ValueGroup("EquipmentOffset") {
         val equipmentOffset by float("ArmorOffset", 0.1f, 0f..1f)
     }
 
+    private val equipOffset = tree(EquipOffset())
+
     private val hurtMarked by boolean("ShowDamage", true)
 
-    protected object FriendsOptions : Configurable("FriendsOptions") {
+    private class FriendsOptions : ValueGroup("FriendsOptions") {
         val friendView by boolean("ViewOnFriend", true)
         val distance by int("Distance", 64, 8..512, "blocks")
     }
 
-    protected val showInFirstPerson by boolean("FirstPersonView", true)
+    private val friendsOptions = tree(FriendsOptions())
 
-    init {
-        tree(FriendsOptions)
-    }
+    protected val showInFirstPerson by boolean("FirstPersonView", true)
 
     // --- Render ---
     protected abstract fun WorldRenderEnvironment.drawHat(isHurt: Boolean)
@@ -82,12 +82,12 @@ abstract class HatsMode(name: String) : Choice(name) {
         for (entity in world.players()) {
             val isMe = entity == player
             val isFriend = FriendManager.isFriend(entity)
-            val inDistance = player.distanceTo(entity) <= FriendsOptions.distance
+            val inDistance = player.distanceTo(entity) <= friendsOptions.distance
 
             val shouldRender = if (isMe) {
                 !mc.options.cameraType.isFirstPerson || showInFirstPerson || ModuleFreeLook.enabled
             } else {
-                inDistance && (isFriend && FriendsOptions.friendView)
+                inDistance && (isFriend && friendsOptions.friendView)
             }
 
             if (shouldRender) {
@@ -96,7 +96,7 @@ abstract class HatsMode(name: String) : Choice(name) {
                 val rotation = entity.interpolateCurrentRotation(it.partialTicks)
 
                 val equipOffset = if (!entity.getItemBySlot(EquipmentSlot.HEAD).isEmpty) {
-                    EquipOffset.equipmentOffset
+                    equipOffset.equipmentOffset
                 } else {
                     0.0F
                 }

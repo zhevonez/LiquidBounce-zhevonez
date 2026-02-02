@@ -25,7 +25,7 @@ import net.ccbluex.liquidbounce.features.module.modules.player.cheststealer.feat
 import net.ccbluex.liquidbounce.features.module.modules.render.DoRender;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleAntiBlind;
 import net.ccbluex.liquidbounce.integration.theme.ThemeManager;
-import net.ccbluex.liquidbounce.utils.client.RunnableClickEvent;
+import net.ccbluex.liquidbounce.utils.text.RunnableClickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -70,7 +70,7 @@ public abstract class MixinScreen implements ScreenAddition {
             return;
         }
 
-        ThemeManager.INSTANCE.loadBackground();
+        ThemeManager.INSTANCE.loadBackgroundAsync();
     }
 
     @Inject(method = "init()V", at = @At("TAIL"))
@@ -79,7 +79,7 @@ public abstract class MixinScreen implements ScreenAddition {
             return;
         }
 
-        ThemeManager.INSTANCE.loadBackground();
+        ThemeManager.INSTANCE.loadBackgroundAsync();
     }
 
     @Inject(method = "renderTransparentBackground", at = @At("HEAD"), cancellable = true)

@@ -36,20 +36,21 @@ import net.ccbluex.liquidbounce.utils.inventory.EnderChestInventoryTracker
 import net.ccbluex.netty.http.model.RequestObject
 import net.ccbluex.netty.http.util.httpNoContent
 import net.ccbluex.netty.http.util.httpOk
+import net.minecraft.client.gui.Gui
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.numbers.NumberFormat
+import net.minecraft.network.chat.numbers.StyledFormat
+import net.minecraft.resources.Identifier
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.scores.Scoreboard
+import net.minecraft.world.level.GameType
+import net.minecraft.world.phys.Vec3
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.PlayerScoreEntry
 import net.minecraft.world.scores.PlayerTeam
-import net.minecraft.network.chat.numbers.NumberFormat
-import net.minecraft.network.chat.numbers.StyledFormat
-import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
-import net.minecraft.core.BlockPos
-import net.minecraft.world.phys.Vec3
-import net.minecraft.world.level.GameType
+import net.minecraft.world.scores.Scoreboard
 import kotlin.math.min
 
 private fun nullableResponse(item: Any?) = item?.let { httpOk(interopGson.toJsonTree(it)) } ?: httpNoContent()
@@ -165,11 +166,11 @@ data class ScoreboardData(val header: Component, val entries: List<SidebarEntry?
     companion object {
 
         /**
-         * Creates a [ScoreboardData] from the [player]'s scoreboard
+         * Creates a [ScoreboardData] from the players's scoreboard
          *
          * Taken from the Minecraft source code
          *
-         * @see net.minecraft.client.gui.hud.InGameHud.renderScoreboardSidebar
+         * @see Gui.renderScoreboardSidebar
          */
         @JvmStatic
         fun fromScoreboard(scoreboard: Scoreboard?): ScoreboardData? {

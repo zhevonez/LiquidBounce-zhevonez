@@ -158,6 +158,7 @@ data class Color4b(val argb: Int) {
     @Deprecated(
         message = "Replaced with Color4b.argb",
         replaceWith = ReplaceWith("this.argb"),
+        level = DeprecationLevel.ERROR, // For script compatibility only
     )
     fun toARGB() = this.argb
 
@@ -207,13 +208,20 @@ data class Color4b(val argb: Int) {
     )
 
     /**
-     * Converts this Color4b to a Java AWT Color
+     * Converts this [Color4b] to a Java AWT Color
      *
      * @return The Color object representation
      */
     fun toAwtColor(): Color = Color(r, g, b, a)
 
     fun toTextColor(): TextColor = TextColor.fromRgb(argb)
+
+    /**
+     * @return the ARGB value in hex string with [format].
+     */
+    @JvmOverloads
+    fun toHexString(format: HexFormat = HexFormat.Default): String =
+        argb.toHexString(format)
 
     @JvmOverloads
     fun toVector4f(dest: Vector4f = Vector4f()): Vector4f {

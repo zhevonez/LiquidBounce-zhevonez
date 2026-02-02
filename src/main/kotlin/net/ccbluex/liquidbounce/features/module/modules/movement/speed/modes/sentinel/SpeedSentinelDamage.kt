@@ -18,8 +18,8 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement.speed.modes.sentinel
 
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
 import net.ccbluex.liquidbounce.event.events.MovementInputEvent
 import net.ccbluex.liquidbounce.event.events.PlayerMoveEvent
 import net.ccbluex.liquidbounce.event.handler
@@ -31,8 +31,8 @@ import net.ccbluex.liquidbounce.features.module.modules.movement.speed.ModuleSpe
 import net.ccbluex.liquidbounce.utils.entity.moving
 import net.ccbluex.liquidbounce.utils.entity.withStrafe
 import net.ccbluex.liquidbounce.utils.movement.stopXZVelocity
-import net.minecraft.world.entity.MoverType
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket
+import net.minecraft.world.entity.MoverType
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -41,7 +41,7 @@ import kotlin.math.floor
  * @anticheatVersion 30.06.2024
  * @testedOn cubecraft.net
  */
-class SpeedSentinelDamage(override val parent: ChoiceConfigurable<*>) : Choice("SentinelDamage") {
+class SpeedSentinelDamage(override val parent: ModeValueGroup<*>) : Mode("SentinelDamage") {
 
     private val speed by float("Speed", 0.5f, 0.1f..5f)
     private val reboostTicks by int("ReboostTicks", 30, 10..50)

@@ -18,35 +18,34 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
+import com.mojang.blaze3d.platform.NativeImage
 import net.ccbluex.liquidbounce.LiquidBounce
-import net.ccbluex.liquidbounce.config.types.NamedChoice
-import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.config.types.list.Tagged
+import net.ccbluex.liquidbounce.config.types.group.ValueGroup
 import net.ccbluex.liquidbounce.event.events.AttackEntityEvent
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.WorldChangeEvent
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.render.WorldRenderEnvironment
 import net.ccbluex.liquidbounce.render.drawSquareTexture
 import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.render.renderEnvironmentForWorld
 import net.ccbluex.liquidbounce.render.withPositionRelativeToCamera
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
-import net.ccbluex.liquidbounce.utils.aiming.utils.canSeePointFrom
 import net.ccbluex.liquidbounce.utils.block.collisionShape
 import net.ccbluex.liquidbounce.utils.client.Chronometer
 import net.ccbluex.liquidbounce.utils.combat.shouldBeShown
-import net.ccbluex.liquidbounce.utils.entity.cameraEyePos
 import net.ccbluex.liquidbounce.utils.entity.rotation
 import net.ccbluex.liquidbounce.utils.kotlin.random
 import net.ccbluex.liquidbounce.utils.math.copy
 import net.ccbluex.liquidbounce.utils.math.times
 import net.ccbluex.liquidbounce.utils.math.toBlockPos
+import net.ccbluex.liquidbounce.utils.raytracing.hasLineOfSight
 import net.ccbluex.liquidbounce.utils.render.asTexture
 import net.ccbluex.liquidbounce.utils.render.toNativeImage
-import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec3
 import org.joml.Quaternionf
@@ -59,12 +58,12 @@ import kotlin.math.max
  *
  * @author sqlerrorthing
  */
-object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
+object ModuleParticles : ClientModule("Particles", category = ModuleCategories.RENDER) {
 
     private val particleSize by float("Size", 1f, 0.5f..2f)
     private val count by intRange("Count", 2..10, 2..30, "particles")
     private val rotate by boolean("RandomParticleRotation", true)
-    private class Physical : Configurable("Physical") {
+    private class Physical : ValueGroup("Physical") {
         val motion by float("Motion", 15f, 1f..30f)
         val bounceX by float("BounceX", 0.8f, 0.0f..1.0f)
         val bounceY by float("BounceY", 0.6f, 0.0f..1.0f)
@@ -98,12 +97,12 @@ object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
 
     @Suppress("unused")
     private val tickHandler = handler<GameTickEvent> {
-        val cameraEyePos = cameraEyePos
+        val cameraPos = mc.gameRenderer.mainCamera.position()
         particles.removeIf { particle ->
-            if (particle.alpha <= 0 || cameraEyePos.distanceToSqr(particle.pos) > 30 * 30) {
+            if (particle.alpha <= 0 || cameraPos.distanceToSqr(particle.pos) > 30 * 30) {
                 true
             } else {
-                particle.update(cameraEyePos)
+                particle.update(cameraPos)
                 false
             }
         }
@@ -141,9 +140,9 @@ object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
 
     @Suppress("UNUSED")
     private enum class ParticleImage(
-        override val choiceName: String,
+        override val tag: String,
         val image: NativeImage,
-    ) : NamedChoice {
+    ) : Tagged {
         /**
          * Original: IDK (first: https://github.com/CCBlueX/LiquidBounce/pull/4976)
          */
@@ -161,7 +160,7 @@ object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
          */
         DOLLAR("Dollar", LiquidBounce.resource("particles/dollar.png").toNativeImage());
 
-        val texture = this.image.asTexture { choiceName }
+        val texture = this.image.asTexture { this@ParticleImage.tag }
     }
 
     private class Particle(var pos: Vec3, val particleImage: ParticleImage) {
@@ -214,7 +213,7 @@ object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
             }
 
             pos = nextPos
-            visible = canSeePointFrom(cameraPos, pos)
+            visible = hasLineOfSight(cameraPos, pos)
         }
 
         context(env: WorldRenderEnvironment)
@@ -243,7 +242,7 @@ object ModuleParticles : ClientModule("Particles", category = Category.RENDER) {
                     )
                 )
 
-                drawSquareTexture(particleImage.texture, size, renderColor.toARGB())
+                drawSquareTexture(particleImage.texture, size, renderColor.argb)
             }
         }
     }

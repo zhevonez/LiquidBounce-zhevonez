@@ -4,13 +4,14 @@ import type {
     Browser,
     ClientInfo,
     ClientUpdate,
-    HudComponent,
+    ClientUser,
     ConfigurableSetting,
     FileSelectDialog,
     FileSelectResult,
     GameWindow,
     GeneratorResult,
     HitResult,
+    HudComponent,
     Metadata,
     MinecraftKeybind,
     Module,
@@ -82,6 +83,23 @@ export async function getSpooferSettings(): Promise<ConfigurableSetting> {
 
 export async function setSpooferSettings(settings: ConfigurableSetting) {
     await fetch(`${API_BASE}/client/spoofer`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(settings)
+    });
+}
+
+export async function getGlobalSettings(): Promise<ConfigurableSetting> {
+    const response = await fetch(`${API_BASE}/client/global`);
+    const data = await response.json();
+
+    return data;
+}
+
+export async function setGlobalSettings(settings: ConfigurableSetting) {
+    await fetch(`${API_BASE}/client/global`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
@@ -698,6 +716,38 @@ export async function setTyping(typing: boolean) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({typing})
+    });
+}
+
+export async function getClientUser(): Promise<ClientUser | null> {
+    const response = await fetch(`${API_BASE}/client/user`);
+    
+    if (!response.ok) {
+        if (response.status === 401) {
+            return null;
+        }
+        throw new Error(`Failed to get client user: ${response.status} ${response.statusText}`);
+    }
+    
+    const data: ClientUser = await response.json();
+    return data;
+}
+
+export async function loginClientUser() {
+    await fetch(`${API_BASE}/client/user/login`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+}
+
+export async function logoutClientUser() {
+    await fetch(`${API_BASE}/client/user/logout`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
     });
 }
 

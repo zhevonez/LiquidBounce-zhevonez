@@ -18,19 +18,19 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.player.cheststealer
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.events.ScheduleInventoryActionEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.player.cheststealer.features.FeatureChestAura
 import net.ccbluex.liquidbounce.features.module.modules.player.cheststealer.features.FeatureSilentScreen
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.CleanupPlanGenerator
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.InventoryCleanupPlan
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.ItemCategorization
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.ModuleInventoryCleaner
-import net.ccbluex.liquidbounce.utils.inventory.CheckScreenHandlerTypeConfigurable
-import net.ccbluex.liquidbounce.utils.inventory.CheckScreenTitleConfigurable
+import net.ccbluex.liquidbounce.utils.inventory.CheckScreenHandlerTypeValueGroup
+import net.ccbluex.liquidbounce.utils.inventory.CheckScreenTitleValueGroup
 import net.ccbluex.liquidbounce.utils.inventory.ContainerItemSlot
 import net.ccbluex.liquidbounce.utils.inventory.HotbarItemSlot
 import net.ccbluex.liquidbounce.utils.inventory.InventoryAction
@@ -52,7 +52,7 @@ import kotlin.math.ceil
  * Automatically steals all items from a chest.
  */
 
-object ModuleChestStealer : ClientModule("ChestStealer", Category.PLAYER) {
+object ModuleChestStealer : ClientModule("ChestStealer", ModuleCategories.PLAYER) {
 
     private val inventoryConstrains = tree(InventoryConstraints())
     private val autoClose by boolean("AutoClose", true)
@@ -63,14 +63,14 @@ object ModuleChestStealer : ClientModule("ChestStealer", Category.PLAYER) {
 
     private val onFull by enumChoice("OnFull", OnFull.THROW)
 
-    private enum class OnFull(override val choiceName: String) : NamedChoice {
+    private enum class OnFull(override val tag: String) : Tagged {
         NONE("None"),
         THROW("Throw"),
 //        PUT_BACK("PutBack"), TODO: Fix this
     }
 
-    private val checkScreenHandlerType = tree(CheckScreenHandlerTypeConfigurable(this))
-    private val checkScreenTitle = tree(CheckScreenTitleConfigurable(this))
+    private val checkScreenHandlerType = tree(CheckScreenHandlerTypeValueGroup(this))
+    private val checkScreenTitle = tree(CheckScreenTitleValueGroup(this))
 
     init {
         tree(FeatureChestAura)
@@ -303,9 +303,9 @@ object ModuleChestStealer : ClientModule("ChestStealer", Category.PLAYER) {
 
     @Suppress("unused")
     private enum class SelectionMode(
-        override val choiceName: String,
+        override val tag: String,
         val processor: (List<ContainerItemSlot>) -> List<ContainerItemSlot>
-    ) : NamedChoice {
+    ) : Tagged {
         DISTANCE("Distance", { it.sortedWith(Comparator(ContainerItemSlot::distance)) }),
         INDEX("Index", { list -> list.sortedBy { it.slotInContainer } }),
         RANDOM("Random", List<ContainerItemSlot>::shuffled),
@@ -323,7 +323,7 @@ object ModuleChestStealer : ClientModule("ChestStealer", Category.PLAYER) {
             checkScreenHandlerType.isValid(this) && checkScreenTitle.isValid(this)
     }
 
-    private enum class ItemMoveMode(override val choiceName: String) : NamedChoice {
+    private enum class ItemMoveMode(override val tag: String) : Tagged {
         QUICK_MOVE("QuickMove"),
         DRAG_AND_DROP("DragAndDrop"),
     }

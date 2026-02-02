@@ -29,17 +29,17 @@ import net.ccbluex.liquidbounce.utils.client.toDegrees
 import net.ccbluex.liquidbounce.utils.entity.box
 import net.ccbluex.liquidbounce.utils.input.InputTracker.isPressedOnAny
 import net.ccbluex.liquidbounce.utils.math.geometry.NormalizedPlane
-import net.ccbluex.liquidbounce.utils.math.withLength
 import net.ccbluex.liquidbounce.utils.math.plus
+import net.ccbluex.liquidbounce.utils.math.withLength
 import net.ccbluex.liquidbounce.utils.render.WorldToScreen
-import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.util.Mth
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.phys.AABB
-import net.minecraft.util.Mth
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector2d
@@ -63,7 +63,7 @@ class DroneControlScreen : Screen("BowAimbot Control Panel".asPlainText()) {
     private var focusedEntity: EntityFocusData? = null
 
     private var dragStartPos: Vector2d? = null
-    private var dragStartRottion: Vec2 = Vec2.ZERO
+    private var dragStartRotation: Vec2 = Vec2.ZERO
 
     private var zoomSteps = 0.0
 
@@ -98,7 +98,7 @@ class DroneControlScreen : Screen("BowAimbot Control Panel".asPlainText()) {
                 )
             ).toFloat().toDegrees()
 
-        this.cameraRotation = this.dragStartRottion.add(Vec2(-yawDelta, -pitchDelta))
+        this.cameraRotation = this.dragStartRotation.add(Vec2(-yawDelta, -pitchDelta))
 
         return true
     }
@@ -118,7 +118,7 @@ class DroneControlScreen : Screen("BowAimbot Control Panel".asPlainText()) {
     override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         if (click.button() == DRAG_BUTTON) {
             this.dragStartPos = Vector2d(click.x, click.y)
-            this.dragStartRottion = this.cameraRotation
+            this.dragStartRotation = this.cameraRotation
         }
 
         return true

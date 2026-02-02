@@ -18,12 +18,12 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.render.drawBox
 import net.ccbluex.liquidbounce.render.drawBoxSide
 import net.ccbluex.liquidbounce.render.drawGradientSides
@@ -47,9 +47,9 @@ import kotlin.math.max
  *
  * Detects and displays safe spots for Crystal PvP.
  */
-object ModuleHoleESP : ClientModule("HoleESP", Category.RENDER), HoleManagerSubscriber {
+object ModuleHoleESP : ClientModule("HoleESP", ModuleCategories.RENDER), HoleManagerSubscriber {
 
-    private val modes = choices("Mode", GlowingPlane, arrayOf(BoxChoice, GlowingPlane))
+    private val modes = choices("Mode", GlowingPlane, arrayOf(BoxMode, GlowingPlane))
 
     private val horizontalDistance by int("HorizontalScanDistance", 32, 4..128)
     private val verticalDistance by int("VerticalScanDistance", 8, 4..128)
@@ -72,9 +72,9 @@ object ModuleHoleESP : ClientModule("HoleESP", Category.RENDER), HoleManagerSubs
         HoleManager.unsubscribe(this)
     }
 
-    private object BoxChoice : Choice("Box") {
+    private object BoxMode : Mode("Box") {
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         private val outline by boolean("Outline", true)
@@ -112,9 +112,9 @@ object ModuleHoleESP : ClientModule("HoleESP", Category.RENDER), HoleManagerSubs
         }
     }
 
-    private object GlowingPlane : Choice("GlowingPlane") {
+    private object GlowingPlane : Mode("GlowingPlane") {
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         private val outline by boolean("Outline", true)

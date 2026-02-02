@@ -19,7 +19,7 @@
 package net.ccbluex.liquidbounce.features.module.modules.player.invcleaner
 
 import net.ccbluex.fastutil.enumMapOf
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.features.module.modules.combat.autoarmor.ArmorEvaluation
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.items.ArmorItemFacet
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.items.ArrowItemFacet
@@ -57,8 +57,6 @@ import net.ccbluex.liquidbounce.utils.item.isSpear
 import net.ccbluex.liquidbounce.utils.item.isSword
 import net.ccbluex.liquidbounce.utils.kotlin.Priority
 import net.minecraft.world.entity.EquipmentSlot
-import net.minecraft.world.level.material.LavaFluid
-import net.minecraft.world.level.material.WaterFluid
 import net.minecraft.world.item.ArrowItem
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.BowItem
@@ -75,6 +73,8 @@ import net.minecraft.world.item.PotionItem
 import net.minecraft.world.item.ShieldItem
 import net.minecraft.world.item.SnowballItem
 import net.minecraft.world.item.WindChargeItem
+import net.minecraft.world.level.material.LavaFluid
+import net.minecraft.world.level.material.WaterFluid
 import java.util.function.Predicate
 
 @JvmRecord
@@ -96,7 +96,7 @@ enum class ItemType(
      */
     val allocationPriority: Priority = Priority.NORMAL,
     /**
-     * The user maybe wants to filter the items by a specific type. But the we don't need all versions of the item.
+     * The user maybe wants to filter the items by a specific type, but they don't always want all versions of the item.
      * To stop the invcleaner from keeping items of every type, we can specify what function a specific item serves.
      * If that function is already served, we can just ignore it.
      */
@@ -131,7 +131,7 @@ enum class ItemFunction {
 }
 
 enum class ItemSortChoice(
-    override val choiceName: String,
+    override val tag: String,
     val category: ItemCategory,
     /**
      * This is the function that is used for the greedy check.
@@ -139,7 +139,7 @@ enum class ItemSortChoice(
      * IF IT WAS IMPLEMENTED
      */
     val satisfactionCheck: Predicate<ItemStack>? = null,
-) : NamedChoice {
+) : Tagged {
     SWORD("Sword", ItemType.SWORD.defaultCategory, { it.isSword }),
     WEAPON("Weapon", ItemType.WEAPON.defaultCategory),
     SPEAR("Spear", ItemType.SPEAR.defaultCategory, { it.isSpear }),

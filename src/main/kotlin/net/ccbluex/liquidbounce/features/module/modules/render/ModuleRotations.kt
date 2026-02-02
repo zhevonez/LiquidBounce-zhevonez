@@ -18,12 +18,12 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleRotations.smooth
 import net.ccbluex.liquidbounce.render.drawBox
 import net.ccbluex.liquidbounce.render.drawLineStrip
@@ -43,7 +43,7 @@ import net.minecraft.world.phys.AABB
  * Allows you to see server-sided rotations.
  */
 
-object ModuleRotations : ClientModule("Rotations", Category.RENDER) {
+object ModuleRotations : ClientModule("Rotations", ModuleCategories.RENDER) {
 
     /**
      * Body part to modify the rotation of.
@@ -52,8 +52,8 @@ object ModuleRotations : ClientModule("Rotations", Category.RENDER) {
 
     @Suppress("unused")
     enum class BodyPart(
-        override val choiceName: String,
-    ) : NamedChoice {
+        override val tag: String,
+    ) : Tagged {
         HEAD("Head"),
         BODY("Body");
     }
@@ -116,13 +116,13 @@ object ModuleRotations : ClientModule("Rotations", Category.RENDER) {
             )
 
             val eyeVector = Vec3f(0.0, 0.0, 1.0)
-                .rotatePitch((-Math.toRadians(camera.xRot().toDouble())).toFloat())
-                .rotateYaw((-Math.toRadians(camera.yRot().toDouble())).toFloat())
+                .rotateX((-Math.toRadians(camera.xRot().toDouble())).toFloat())
+                .rotateY((-Math.toRadians(camera.yRot().toDouble())).toFloat())
 
             if (drawVectorLine) {
                 renderEnvironmentForWorld(matrixStack) {
                     drawLineStrip(
-                        vectorLine.toARGB(),
+                        vectorLine.argb,
                         eyeVector, eyeVector + Vec3f(interpolatedRotationVec * 100.0)
                     )
                 }

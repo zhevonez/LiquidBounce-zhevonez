@@ -23,17 +23,13 @@ import com.google.common.base.Objects;
 import net.ccbluex.liquidbounce.interfaces.TextColorAddition;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Why not Style? Because it is immutable and we would have to edit each and every new instance creation.
+ * Why not Style? Because it is immutable so we would have to create a new instance every edit.
  */
 @Mixin(TextColor.class)
 public abstract class MixinTextColor implements TextColorAddition {

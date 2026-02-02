@@ -21,19 +21,15 @@ package net.ccbluex.liquidbounce.features.module.modules.movement.longjump
 import net.ccbluex.liquidbounce.event.events.MovementInputEvent
 import net.ccbluex.liquidbounce.event.events.PlayerJumpEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.movement.longjump.modes.Matrix7145FlagLongJump
 import net.ccbluex.liquidbounce.features.module.modules.movement.longjump.modes.VulcanLongJump
 import net.ccbluex.liquidbounce.features.module.modules.movement.longjump.modes.nocheatplus.NoCheatPlusBoost
 import net.ccbluex.liquidbounce.features.module.modules.movement.longjump.modes.nocheatplus.NoCheatPlusBow
 import net.ccbluex.liquidbounce.utils.entity.moving
 
-object ModuleLongJump : ClientModule("LongJump", Category.MOVEMENT) {
-
-    init {
-        enableLock()
-    }
+object ModuleLongJump : ClientModule("LongJump", ModuleCategories.MOVEMENT) {
 
     val mode = choices(
         "Mode", NoCheatPlusBoost, arrayOf(
@@ -64,7 +60,7 @@ object ModuleLongJump : ClientModule("LongJump", Category.MOVEMENT) {
 
         // AutoJump
         if (autoJump && player.onGround() && player.moving
-            && mode.activeChoice != NoCheatPlusBow) {
+            && mode.activeMode != NoCheatPlusBow) {
             player.jumpFromGround()
             jumped = true
         }

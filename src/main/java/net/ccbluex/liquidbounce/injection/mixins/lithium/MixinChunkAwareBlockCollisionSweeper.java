@@ -25,8 +25,8 @@ import net.caffeinemc.mods.lithium.common.entity.movement.ChunkAwareBlockCollisi
 import net.ccbluex.liquidbounce.common.ShapeFlag;
 import net.ccbluex.liquidbounce.event.EventManager;
 import net.ccbluex.liquidbounce.event.events.BlockShapeEvent;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,7 +52,7 @@ public abstract class MixinChunkAwareBlockCollisionSweeper {
             value = "INVOKE",
             target = "Lnet/minecraft/world/phys/shapes/CollisionContext;getCollisionShape(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/CollisionGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/phys/shapes/VoxelShape;"
     ))
-    private VoxelShape hookCollisionShape(VoxelShape original, @Local BlockState blockState) {
+    private VoxelShape hookCollisionShape(VoxelShape original, @Local(name = "state") BlockState blockState) {
         if (this.pos == null || ShapeFlag.noShapeChange) {
             return original;
         }

@@ -18,7 +18,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat.crystalaura
 
-import net.ccbluex.liquidbounce.config.types.nesting.ToggleableConfigurable
+import net.ccbluex.liquidbounce.config.types.group.ToggleableValueGroup
 import net.ccbluex.liquidbounce.event.events.PacketEvent
 import net.ccbluex.liquidbounce.event.events.WorldChangeEvent
 import net.ccbluex.liquidbounce.event.handler
@@ -27,13 +27,13 @@ import net.ccbluex.liquidbounce.features.module.modules.render.ModuleDebug
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
 import net.ccbluex.liquidbounce.utils.aiming.data.Rotation
 import net.ccbluex.liquidbounce.utils.aiming.utils.raytraceBox
-import net.minecraft.world.entity.boss.enderdragon.EndCrystal
-import net.minecraft.network.protocol.game.ServerboundInteractPacket
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket
+import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundLoginPacket
+import net.minecraft.network.protocol.game.ServerboundInteractPacket
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket
 import net.minecraft.world.InteractionHand
-import net.minecraft.core.BlockPos
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal
 import net.minecraft.world.phys.AABB
 import kotlin.math.max
 
@@ -41,7 +41,7 @@ import kotlin.math.max
  * Allows the crystal aura to send a break packet right when a crystal is placed by predicting the
  * expected entity id.
  */
-object SubmoduleIdPredict : ToggleableConfigurable(ModuleCrystalAura, "IDPredict", false) {
+object SubmoduleIdPredict : ToggleableValueGroup(ModuleCrystalAura, "IDPredict", false) {
 
     /**
      * Sends a packet for all included offsets.
@@ -58,7 +58,7 @@ object SubmoduleIdPredict : ToggleableConfigurable(ModuleCrystalAura, "IDPredict
     /**
      * Sends an additional rotation packet.
      */
-    private object Rotate : ToggleableConfigurable(this, "Rotate", true) {
+    private object Rotate : ToggleableValueGroup(this, "Rotate", true) {
 
         val back by boolean("Back", false)
 

@@ -23,9 +23,9 @@ import it.unimi.dsi.fastutil.longs.LongSet
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.ccbluex.fastutil.forEachLong
 import net.ccbluex.liquidbounce.utils.math.contains
-import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.LevelChunk
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -63,14 +63,14 @@ sealed class AbstractBlockLocationTracker<T> : ChunkScanner.BlockChangeSubscribe
     /**
      * Returns a [Sequence] providing all tracked [BlockPos].
      *
-     * Note: The elements of the [Sequence] is [BlockPos.Mutable]. Copy them if they will be maintained.
+     * Note: The elements of the [Sequence] is [BlockPos.MutableBlockPos]. Copy them if they will be maintained.
      */
     abstract fun allPositions(): Sequence<BlockPos>
 
     /**
      * Returns a [Sequence] providing all tracked [BlockPos] and its state [T].
      *
-     * Note: The elements of the [Map.Entry.key] is [BlockPos.Mutable]. Copy them if they will be maintained.
+     * Note: The elements of the [Map.Entry.key] is [BlockPos.MutableBlockPos]. Copy them if they will be maintained.
      */
     abstract fun iterate(): Sequence<Map.Entry<BlockPos, T>>
 

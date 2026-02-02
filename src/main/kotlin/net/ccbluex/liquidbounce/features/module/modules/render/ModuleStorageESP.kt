@@ -19,15 +19,15 @@
 package net.ccbluex.liquidbounce.features.module.modules.render
 
 import kotlinx.atomicfu.atomic
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
-import net.ccbluex.liquidbounce.config.types.nesting.ToggleableConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
+import net.ccbluex.liquidbounce.config.types.group.ToggleableValueGroup
 import net.ccbluex.liquidbounce.event.events.DrawOutlinesEvent
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.WorldRenderEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.player.cheststealer.ModuleChestStealer
 import net.ccbluex.liquidbounce.features.module.modules.player.cheststealer.features.FeatureChestAura
 import net.ccbluex.liquidbounce.render.ClientRenderPipelines
@@ -44,7 +44,7 @@ import net.ccbluex.liquidbounce.render.getDynamicTransformsUniform
 import net.ccbluex.liquidbounce.render.longLines
 import net.ccbluex.liquidbounce.render.renderEnvironmentForWorld
 import net.ccbluex.liquidbounce.render.translate
-import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformConfigurable
+import net.ccbluex.liquidbounce.render.utils.DistanceFadeUniformValueGroup
 import net.ccbluex.liquidbounce.render.withPositionRelativeToCamera
 import net.ccbluex.liquidbounce.render.withPush
 import net.ccbluex.liquidbounce.utils.block.AbstractBlockLocationTracker
@@ -73,6 +73,7 @@ import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity
 import net.minecraft.world.level.block.entity.DispenserBlockEntity
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity
 import net.minecraft.world.level.block.entity.HopperBlockEntity
+import net.minecraft.world.level.block.entity.ShelfBlockEntity
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
@@ -84,11 +85,11 @@ import java.awt.Color
  * Allows you to see chests, dispensers, etc. through walls.
  */
 
-object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = listOf("ChestESP")) {
+object ModuleStorageESP : ClientModule("StorageESP", ModuleCategories.RENDER, aliases = listOf("ChestESP")) {
 
     private val modes = choices("Mode", GlowMode, arrayOf(BoxMode, GlowMode))
 
-    sealed class ChestType(name: String, defaultColor: Color4b) : ToggleableConfigurable(this, name, enabled = true) {
+    sealed class ChestType(name: String, defaultColor: Color4b) : ToggleableValueGroup(this, name, enabled = true) {
         val color by color("Color", defaultColor)
         val tracers by boolean("Tracers", false)
 
@@ -111,6 +112,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
         object Hopper : ChestType("Hopper", Color4b(Color.GRAY))
         object ShulkerBox : ChestType("ShulkerBox", Color4b(Color(0x6e, 0x4d, 0x6e).brighter()))
         object Pot : ChestType("Pot", Color4b(209, 134, 0))
+        object Shelf : ChestType("Shelf", Color4b(160, 82, 45))
     }
 
     private val allTypes = arrayOf(
@@ -122,6 +124,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
         ChestType.Hopper,
         ChestType.ShulkerBox,
         ChestType.Pot,
+        ChestType.Shelf,
     )
 
     init {
@@ -130,7 +133,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
 
     private val requiresChestStealer by boolean("RequiresChestStealer", false)
 
-    private val distanceFade = tree(DistanceFadeUniformConfigurable())
+    private val distanceFade = tree(DistanceFadeUniformValueGroup())
 
     override fun onEnabled() {
         ChunkScanner.subscribe(StorageScanner)
@@ -140,8 +143,8 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
         ChunkScanner.unsubscribe(StorageScanner)
     }
 
-    private object BoxMode : Choice("Box") {
-        override val parent: ChoiceConfigurable<Choice>
+    private object BoxMode : Mode("Box") {
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         val dirtyFlag = atomic(true)
@@ -267,7 +270,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
 
     }
 
-    object GlowMode : Choice("Glow") {
+    object GlowMode : Mode("Glow") {
         internal val dirtyFlag = atomic(true)
 
         private val renderState = RenderPassRenderState("${ModuleStorageESP.name} $name")
@@ -283,7 +286,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
             super.disable()
         }
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         @Suppress("unused")
@@ -338,8 +341,8 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
 
         renderEnvironmentForWorld(event.matrixStack) {
             val eyeVector = Vec3f(0.0, 0.0, 1.0)
-                .rotatePitch(-camera.xRot().toRadians())
-                .rotateYaw(-camera.yRot().toRadians())
+                .rotateX(-camera.xRot().toRadians())
+                .rotateY(-camera.yRot().toRadians())
 
             startBatch()
             longLines {
@@ -381,6 +384,7 @@ object ModuleStorageESP : ClientModule("StorageESP", Category.RENDER, aliases = 
             is HopperBlockEntity -> ChestType.Hopper
             is ShulkerBoxBlockEntity -> ChestType.ShulkerBox
             is DecoratedPotBlockEntity -> ChestType.Pot
+            is ShelfBlockEntity -> ChestType.Shelf
             else -> null
         }
     }

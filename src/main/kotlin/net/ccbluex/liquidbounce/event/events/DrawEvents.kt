@@ -19,20 +19,20 @@
 
 package net.ccbluex.liquidbounce.event.events
 
-import net.ccbluex.liquidbounce.annotations.Nameable
-import net.ccbluex.liquidbounce.event.Event
 import com.mojang.blaze3d.pipeline.RenderTarget
-import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.Camera
 import com.mojang.blaze3d.vertex.PoseStack
+import net.ccbluex.liquidbounce.annotations.Tag
+import net.ccbluex.liquidbounce.event.Event
+import net.minecraft.client.Camera
+import net.minecraft.client.gui.GuiGraphics
 
-@Nameable("gameRender")
+@Tag("gameRender")
 object GameRenderEvent : Event()
 
-@Nameable("screenRender")
+@Tag("screenRender")
 class ScreenRenderEvent(val context: GuiGraphics, val partialTicks: Float) : Event()
 
-@Nameable("worldRender")
+@Tag("worldRender")
 class WorldRenderEvent(val matrixStack: PoseStack, val camera: Camera, val partialTicks: Float) : Event()
 
 /**
@@ -41,10 +41,10 @@ class WorldRenderEvent(val matrixStack: PoseStack, val camera: Camera, val parti
  *
  * Note: After writing to the outline framebuffer [markDirty] must be called.
  */
-@Nameable("drawOutlines")
+@Tag("drawOutlines")
 class DrawOutlinesEvent(
     val renderTarget: RenderTarget,
-    val matrixStack: PoseStack,
+    val pose: PoseStack,
     val camera: Camera,
     val partialTicks: Float,
     val type: OutlineType,
@@ -65,7 +65,7 @@ class DrawOutlinesEvent(
     }
 }
 
-@Nameable("overlayRender")
+@Tag("overlayRender")
 class OverlayRenderEvent(
     val context: GuiGraphics,
     val tickDelta: Float,

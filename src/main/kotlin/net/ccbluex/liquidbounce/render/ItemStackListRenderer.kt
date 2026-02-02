@@ -23,24 +23,25 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap
 import net.ccbluex.liquidbounce.additions.drawCooldownProgress
 import net.ccbluex.liquidbounce.additions.drawItemBar
 import net.ccbluex.liquidbounce.additions.drawStackCount
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
 import net.ccbluex.liquidbounce.event.EventListener
 import net.ccbluex.liquidbounce.event.events.OverlayRenderEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.kotlin.EventPriorityConvention.READ_FINAL_STATE
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.achievement.StatsScreen
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import org.joml.Vector2fc
 import org.joml.Vector2i
 import kotlin.math.abs
@@ -49,7 +50,7 @@ private const val SLOT_SIZE = 18
 private const val ITEM_SIZE = 16
 
 /**
- * @see net.minecraft.client.gui.screen.StatsScreen.SLOT_TEXTURE
+ * @see StatsScreen.SLOT_SPRITE
  */
 private val ID_SINGLE_SLOT = Identifier.withDefaultNamespace("container/slot")
 
@@ -124,10 +125,10 @@ class ItemStackListRenderer private constructor(
         this.backgroundMargin = 0F
     }
 
-    fun background(choice: BackgroundChoice) =
+    fun background(choice: BackgroundMode) =
         when (choice) {
-            is BackgroundChoice.Rect -> rectBackground(choice.fillColor, choice.outlineColor, choice.margin)
-            is BackgroundChoice.Texture -> textureBackground()
+            is BackgroundMode.Rect -> rectBackground(choice.fillColor, choice.outlineColor, choice.margin)
+            is BackgroundMode.Texture -> textureBackground()
         }
 
     fun itemStackRenderer(itemStackRenderer: SingleItemStackRenderer) = apply {
@@ -313,18 +314,18 @@ class ItemStackListRenderer private constructor(
         }
     }
 
-    sealed class BackgroundChoice(name: String, override val parent: ChoiceConfigurable<*>) : Choice(name) {
-        class Rect(parent: ChoiceConfigurable<*>) : BackgroundChoice("Rect", parent) {
+    sealed class BackgroundMode(name: String, override val parent: ModeValueGroup<*>) : Mode(name) {
+        class Rect(parent: ModeValueGroup<*>) : BackgroundMode("Rect", parent) {
             val fillColor by color("Color", Color4b.DEFAULT_BG_COLOR)
             val outlineColor by color("OutlineColor", Color4b.TRANSPARENT)
             val margin by float("Margin", 2.0F, 0.0F..100.0F)
         }
 
-        class Texture(parent: ChoiceConfigurable<*>) : BackgroundChoice("Texture", parent)
+        class Texture(parent: ModeValueGroup<*>) : BackgroundMode("Texture", parent)
 
         companion object {
             @JvmStatic
-            internal fun backgroundChoices(parent: ChoiceConfigurable<*>) = arrayOf(
+            internal fun backgroundChoices(parent: ModeValueGroup<*>) = arrayOf(
                 Rect(parent),
                 Texture(parent),
             )
@@ -332,7 +333,7 @@ class ItemStackListRenderer private constructor(
     }
 
     fun interface SingleItemStackRenderer {
-        fun GuiGraphics.drawItemStack(textRenderer: Font, index: Int, stack: ItemStack, x: Int, y: Int)
+        fun GuiGraphics.drawItemStack(font: Font, index: Int, stack: ItemStack, x: Int, y: Int)
 
         companion object {
 

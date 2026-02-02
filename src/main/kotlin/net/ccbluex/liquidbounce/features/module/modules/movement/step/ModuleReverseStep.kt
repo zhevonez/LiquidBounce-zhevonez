@@ -18,19 +18,19 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement.step
 
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
 import net.ccbluex.liquidbounce.event.events.PlayerJumpEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.tickHandler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.utils.block.getBlock
 import net.ccbluex.liquidbounce.utils.entity.FallingPlayer
 import net.ccbluex.liquidbounce.utils.entity.SimulatedPlayer
 import net.ccbluex.liquidbounce.utils.movement.DirectionalInput
-import net.minecraft.world.level.block.Blocks
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.shapes.Shapes
 
 /**
@@ -39,7 +39,7 @@ import net.minecraft.world.phys.shapes.Shapes
  * Allows you to step down blocks faster.
  */
 
-object ModuleReverseStep : ClientModule("ReverseStep", Category.MOVEMENT) {
+object ModuleReverseStep : ClientModule("ReverseStep", ModuleCategories.MOVEMENT) {
 
     private var modes = choices("Mode", Instant, arrayOf(Instant, Strict, Accelerator)).apply { tagBy(this) }
     private val maximumFallDistance by float("MaximumFallDistance", 1f, 1f..50f)
@@ -74,8 +74,8 @@ object ModuleReverseStep : ClientModule("ReverseStep", Category.MOVEMENT) {
         }
     }
 
-    object Instant : Choice("Instant") {
-        override val parent: ChoiceConfigurable<Choice>
+    object Instant : Mode("Instant") {
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         private val ticks by int("Ticks", 20, 1..40, "ticks")
@@ -121,8 +121,8 @@ object ModuleReverseStep : ClientModule("ReverseStep", Category.MOVEMENT) {
 
     }
 
-    object Accelerator : Choice("Accelerator") {
-        override val parent: ChoiceConfigurable<Choice>
+    object Accelerator : Mode("Accelerator") {
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         private val factor by float("Factor", 1.0F, 0.1F..5.0F)
@@ -133,15 +133,15 @@ object ModuleReverseStep : ClientModule("ReverseStep", Category.MOVEMENT) {
                     return@tickHandler
                 }
 
-                player.setDeltaMovement(player.deltaMovement.multiply(0.0, factor.toDouble(), 0.0))
+                player.deltaMovement = player.deltaMovement.multiply(0.0, factor.toDouble(), 0.0)
             }
         }
 
     }
 
-    object Strict : Choice("Strict") {
+    object Strict : Mode("Strict") {
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         private val motion by float("Motion", 1.0F, 0.1F..5.0F)

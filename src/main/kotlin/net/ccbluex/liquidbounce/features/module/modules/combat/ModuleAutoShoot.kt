@@ -19,15 +19,15 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.list.Tagged
 import net.ccbluex.liquidbounce.event.events.RotationUpdateEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.tickHandler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.combat.killaura.ModuleKillAura
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
-import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
+import net.ccbluex.liquidbounce.utils.aiming.RotationsValueGroup
 import net.ccbluex.liquidbounce.utils.aiming.data.Rotation
 import net.ccbluex.liquidbounce.utils.aiming.point.PointTracker
 import net.ccbluex.liquidbounce.utils.aiming.projectiles.SituationalProjectileAngleCalculator
@@ -62,7 +62,7 @@ import java.util.function.Function
  *
  * @author 1zuna
  */
-object ModuleAutoShoot : ClientModule("AutoShoot", Category.COMBAT) {
+object ModuleAutoShoot : ClientModule("AutoShoot", ModuleCategories.COMBAT) {
 
     private val throwableType by enumChoice("ThrowableType", ThrowableType.EGG_AND_SNOWBALL)
     private val gravityType by enumChoice("GravityType", GravityType.AUTO).apply { tagBy(this) }
@@ -83,7 +83,7 @@ object ModuleAutoShoot : ClientModule("AutoShoot", Category.COMBAT) {
      * So far, I have never seen an anti-cheat which detects high turning speed for actions such as
      * shooting.
      */
-    private val rotationConfigurable = tree(RotationsConfigurable(this))
+    private val rotations = tree(RotationsValueGroup(this))
     private val aimOffThreshold by float("AimOffThreshold", 2f, 0.5f..10f)
 
     private val swingMode by enumChoice("SwingMode", SwingMode.DO_NOT_HIDE)
@@ -148,7 +148,7 @@ object ModuleAutoShoot : ClientModule("AutoShoot", Category.COMBAT) {
 
         // Set the rotation with the usage priority of 2.
         RotationManager.setRotationTarget(
-            rotationConfigurable.toRotationTarget(rotation ?: return@handler, considerInventory = considerInventory),
+            rotations.toRotationTarget(rotation ?: return@handler, considerInventory = considerInventory),
             Priority.IMPORTANT_FOR_USAGE_2, this
         )
     }
@@ -198,7 +198,7 @@ object ModuleAutoShoot : ClientModule("AutoShoot", Category.COMBAT) {
         }
     }
 
-    private enum class ThrowableType(override val choiceName: String) : NamedChoice, () -> HotbarItemSlot? {
+    private enum class ThrowableType(override val tag: String) : Tagged, () -> HotbarItemSlot? {
         EGG_AND_SNOWBALL("EggAndSnowball"),
         ANYTHING("Anything");
 
@@ -214,7 +214,7 @@ object ModuleAutoShoot : ClientModule("AutoShoot", Category.COMBAT) {
         }
     }
 
-    private enum class GravityType(override val choiceName: String) : NamedChoice, Function<LivingEntity, Rotation?> {
+    private enum class GravityType(override val tag: String) : Tagged, Function<LivingEntity, Rotation?> {
 
         AUTO("Auto"),
         LINEAR("Linear"),

@@ -25,18 +25,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.ccbluex.liquidbounce.event.EventManager;
 import net.ccbluex.liquidbounce.event.EventState;
-import net.ccbluex.liquidbounce.event.events.AllowAutoJumpEvent;
-import net.ccbluex.liquidbounce.event.events.ClientPlayerDataEvent;
-import net.ccbluex.liquidbounce.event.events.ClientPlayerInventoryEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerMoveEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerMovementTickEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerNetworkMovementTickEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerPostTickEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerPushOutEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerSneakMultiplier;
-import net.ccbluex.liquidbounce.event.events.PlayerTickEvent;
-import net.ccbluex.liquidbounce.event.events.PlayerUseMultiplier;
-import net.ccbluex.liquidbounce.event.events.SprintEvent;
+import net.ccbluex.liquidbounce.event.events.*;
 import net.ccbluex.liquidbounce.features.module.modules.exploit.ModulePortalMenu;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleEntityControl;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoPush;
@@ -44,28 +33,28 @@ import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleSprint;
 import net.ccbluex.liquidbounce.features.module.modules.movement.NoPushBy;
 import net.ccbluex.liquidbounce.features.module.modules.movement.noslow.ModuleNoSlow;
 import net.ccbluex.liquidbounce.features.module.modules.player.ModuleNoEntityInteract;
-import net.ccbluex.liquidbounce.features.module.modules.render.ModuleClickGui;
+import net.ccbluex.liquidbounce.features.module.modules.player.ModuleReach;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.features.module.modules.world.ModuleLiquidPlace;
-import net.ccbluex.liquidbounce.integration.BrowserScreen;
-import net.ccbluex.liquidbounce.integration.VirtualDisplayScreen;
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.PlayerData;
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.PlayerInventoryData;
+import net.ccbluex.liquidbounce.integration.screen.ScreenManager;
 import net.ccbluex.liquidbounce.interfaces.LocalPlayerAddition;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.aiming.data.Rotation;
-import net.ccbluex.liquidbounce.utils.aiming.utils.RaytracingKt;
 import net.ccbluex.liquidbounce.utils.movement.DirectionalInput;
+import net.ccbluex.liquidbounce.utils.raytracing.EntityRaytracingKt;
+import net.ccbluex.liquidbounce.utils.raytracing.RaytracingKt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -199,7 +188,7 @@ public abstract class MixinLocalPlayer extends MixinPlayer implements LocalPlaye
     }
 
     /**
-     * Hook push out function tick at HEAD and call out push out event, which is able to stop the cancel the execution.
+     * Hook moveTowardsClosestSpace at HEAD and call PlayerPushoutEvent
      */
     @Inject(method = "moveTowardsClosestSpace", at = @At("HEAD"), cancellable = true)
     private void hookPushOut(double x, double z, CallbackInfo ci) {
@@ -280,8 +269,27 @@ public abstract class MixinLocalPlayer extends MixinPlayer implements LocalPlaye
             rotation = cameraRotation;
         }
 
-        return RaytracingKt.raycast(rotation, Math.max(blockInteractionRange, entityInteractionRange), ClipContext.Block.OUTLINE,
-            ModuleLiquidPlace.INSTANCE.getRunning(), tickDelta);
+        // Through Walls Reach
+        if (ModuleReach.INSTANCE.getRunning()) {
+            var throughWallsRange = ModuleReach.INSTANCE.getEntity().getInteractionThroughWallsRange$liquidbounce();
+
+            if (throughWallsRange > 0.0) {
+                var hitEntityResult = EntityRaytracingKt.findEntityInCrosshair(throughWallsRange, rotation, null);
+
+                if (hitEntityResult != null && hitEntityResult.getType() == HitResult.Type.ENTITY) {
+                    return hitEntityResult;
+                }
+            }
+        }
+
+
+        return RaytracingKt.traceFromPlayer(
+            rotation,
+            Math.max(blockInteractionRange, entityInteractionRange),
+            ClipContext.Block.OUTLINE,
+            ModuleLiquidPlace.INSTANCE.getRunning(),
+            tickDelta
+        );
     }
 
     @ModifyExpressionValue(method = "pick(Lnet/minecraft/world/entity/Entity;DDF)Lnet/minecraft/world/phys/HitResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;"))
@@ -457,8 +465,7 @@ public abstract class MixinLocalPlayer extends MixinPlayer implements LocalPlaye
     @WrapWithCondition(method = "clientSideCloseContainer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"))
     private boolean preventCloseScreen(Minecraft instance, Screen screen) {
         // Prevent closing screen if the current screen is a client screen
-        return !(instance.screen instanceof BrowserScreen || instance.screen instanceof VirtualDisplayScreen ||
-                instance.screen instanceof ModuleClickGui.ClickScreen);
+        return !ScreenManager.isClientScreen(screen);
     }
 
 }

@@ -25,15 +25,15 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet
 import net.ccbluex.fastutil.fastIterator
 import net.ccbluex.fastutil.mapToArray
 import net.ccbluex.liquidbounce.config.types.CurveValue.Axis.Companion.axis
-import net.ccbluex.liquidbounce.config.types.NamedChoice
-import net.ccbluex.liquidbounce.config.types.nesting.ToggleableConfigurable
+import net.ccbluex.liquidbounce.config.types.list.Tagged
+import net.ccbluex.liquidbounce.config.types.group.ToggleableValueGroup
 import net.ccbluex.liquidbounce.event.computedOn
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.OverlayRenderEvent
 import net.ccbluex.liquidbounce.event.events.WorldChangeEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.ItemAndComponents
 import net.ccbluex.liquidbounce.render.ItemStackListRenderer.Companion.drawItemStackList
 import net.ccbluex.liquidbounce.render.engine.type.Color4b
@@ -60,7 +60,7 @@ import org.joml.Vector2f
  *
  * Show the names and quantities of items in several boxes.
  */
-object ModuleItemTags : ClientModule("ItemTags", Category.RENDER) {
+object ModuleItemTags : ClientModule("ItemTags", ModuleCategories.RENDER) {
 
     private val filter by enumChoice("Filter", Filter.BLACKLIST)
     private val items by items("Items", itemSortedSetOf())
@@ -68,23 +68,23 @@ object ModuleItemTags : ClientModule("ItemTags", Category.RENDER) {
     private val backgroundColor by color("BackgroundColor", Color4b.DEFAULT_BG_COLOR)
     private val scale = curve(
         "Scale",
-        mutableListOf(Vector2f(0f, 1f), Vector2f(128f, 1f)),
-        xAxis = "Distance" axis 0f..128f,
+        mutableListOf(Vector2f(0f, 1f), Vector2f(200f, 1f)),
+        xAxis = "Distance" axis 0f..200f,
         yAxis = "Scale" axis 0.25f..4f,
     )
-    private val renderOffset by vec3d("RenderOffset", Vec3.ZERO)
+    private val renderOffset by vec3d("RenderOffset", useLocateButton = false)
     private val rowLength by int("RowLength", 100, 1..100)
     private val preventOverlap by boolean("PreventOverlap", true)
     private val clusterEntities = curve(
         "ClusterEntities",
-        mutableListOf(Vector2f(0f, 2f), Vector2f(64f, 16f), Vector2f(128f, 16f)),
-        xAxis = "Distance" axis 0f..128f,
+        mutableListOf(Vector2f(0f, 2f), Vector2f(64f, 16f), Vector2f(128f, 16f), Vector2f(200f, 24f)),
+        xAxis = "Distance" axis 0f..200f,
         yAxis = "Size" axis 0.1F..32F,
     )
 
     private val mergeMode by enumChoice("MergeMode", MergeMode.BY_COMPONENTS)
 
-    private object Shulker : ToggleableConfigurable(this, "Shulker", false) {
+    private object Shulker : ToggleableValueGroup(this, "Shulker", false) {
         val mergeStacks by boolean("MergeStacks", true)
         val showTitle by boolean("ShowTitle", true)
     }
@@ -98,9 +98,9 @@ object ModuleItemTags : ClientModule("ItemTags", Category.RENDER) {
 
     @Suppress("unused")
     private enum class MergeMode(
-        override val choiceName: String,
+        override val tag: String,
         val merge: (stacks: Array<ItemStack>) -> Array<ItemStack>,
-    ) : NamedChoice {
+    ) : Tagged {
         /**
          * Nothing will be merged.
          */

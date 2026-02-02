@@ -18,25 +18,21 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.movement.highjump
 
-import net.ccbluex.liquidbounce.config.types.nesting.Choice
-import net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable
+import net.ccbluex.liquidbounce.config.types.group.Mode
+import net.ccbluex.liquidbounce.config.types.group.ModeValueGroup
 import net.ccbluex.liquidbounce.event.events.PlayerJumpEvent
 import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.event.tickHandler
 import net.ccbluex.liquidbounce.event.waitTicks
-import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
 
 /**
  * HighJump module
  *
  * Allows you to jump higher.
  */
-object ModuleHighJump : ClientModule("HighJump", Category.MOVEMENT) {
-
-    init {
-        enableLock()
-    }
+object ModuleHighJump : ClientModule("HighJump", ModuleCategories.MOVEMENT) {
 
     private val modes = choices(
         "Mode", Vanilla, arrayOf(
@@ -45,9 +41,9 @@ object ModuleHighJump : ClientModule("HighJump", Category.MOVEMENT) {
     ).apply { tagBy(this) }
     private val motion by float("Motion", 0.8f, 0.2f..10f)
 
-    private object Vanilla : Choice("Vanilla") {
+    private object Vanilla : Mode("Vanilla") {
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         @Suppress("unused")
@@ -62,9 +58,9 @@ object ModuleHighJump : ClientModule("HighJump", Category.MOVEMENT) {
      * @testedOn eu.loyisa.cn; eu.anticheat-test.com
      * @note this still flags a bit
      */
-    private object Vulcan : Choice("Vulcan") {
+    private object Vulcan : Mode("Vulcan") {
 
-        override val parent: ChoiceConfigurable<Choice>
+        override val parent: ModeValueGroup<Mode>
             get() = modes
 
         var glide by boolean("Glide", false)

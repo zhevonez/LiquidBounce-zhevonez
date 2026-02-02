@@ -19,18 +19,18 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.misc.betterchat
 
-import net.ccbluex.liquidbounce.config.types.nesting.ToggleableConfigurable
+import net.ccbluex.liquidbounce.config.types.group.ToggleableValueGroup
 import net.ccbluex.liquidbounce.event.events.ChatReceiveEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.interfaces.GuiMessageAddition
 import net.ccbluex.liquidbounce.interfaces.GuiMessageLineAddition
 import net.ccbluex.liquidbounce.utils.client.MessageMetadata
 import net.ccbluex.liquidbounce.utils.client.chat
+import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.util.StringDecomposer
-import net.minecraft.ChatFormatting
 
-object AntiSpam : ToggleableConfigurable(ModuleBetterChat, "AntiSpam", true) {
+object AntiSpam : ToggleableValueGroup(ModuleBetterChat, "AntiSpam", true) {
 
     private val stack by boolean("StackMessages", false)
     private val regexFilters by regexList("Filters", linkedSetOf())

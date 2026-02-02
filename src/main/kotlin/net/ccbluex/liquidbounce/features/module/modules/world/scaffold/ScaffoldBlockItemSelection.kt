@@ -18,20 +18,20 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.world.scaffold
 
-import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.config.types.group.ValueGroup
 import net.ccbluex.liquidbounce.features.module.modules.player.invcleaner.ModuleInventoryCleaner
 import net.ccbluex.liquidbounce.utils.client.player
 import net.ccbluex.liquidbounce.utils.client.world
 import net.ccbluex.liquidbounce.utils.collection.blockSortedSetOf
 import net.ccbluex.liquidbounce.utils.item.getBlock
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.FallingBlock
-import net.minecraft.world.item.ItemStack
-import net.minecraft.core.BlockPos
-import net.minecraft.core.Direction
 
-object ScaffoldBlockItemSelection : Configurable("BlockItemSelection") {
+object ScaffoldBlockItemSelection : ValueGroup("BlockItemSelection") {
 
     /**
      * A list of blocks which may not be placed (apart from the usual checks), so inv cleaner and scaffold

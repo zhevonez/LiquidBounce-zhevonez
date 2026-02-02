@@ -19,15 +19,15 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.misc
 
-import net.ccbluex.liquidbounce.config.types.NamedChoice
-import net.ccbluex.liquidbounce.features.module.Category
-import net.ccbluex.liquidbounce.features.module.ClientModule
-import net.ccbluex.liquidbounce.utils.client.Chronometer
 import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.platform.Window
+import net.ccbluex.liquidbounce.config.types.list.Tagged
+import net.ccbluex.liquidbounce.features.module.ClientModule
+import net.ccbluex.liquidbounce.features.module.ModuleCategories
+import net.ccbluex.liquidbounce.utils.client.Chronometer
 import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.inventory.Slot
 import net.minecraft.world.inventory.ClickType
+import net.minecraft.world.inventory.Slot
 import org.lwjgl.glfw.GLFW
 
 fun interface MouseClick {
@@ -43,7 +43,7 @@ fun interface ClickAction {
  *
  * @author sqlerrorthing
  */
-object ModuleItemScroller : ClientModule("ItemScroller", Category.MISC) {
+object ModuleItemScroller : ClientModule("ItemScroller", ModuleCategories.MISC) {
     @JvmStatic
     val clickMode by enumChoice("ClickMode", ClickMode.QUICK_MOVE)
 
@@ -60,15 +60,15 @@ object ModuleItemScroller : ClientModule("ItemScroller", Category.MISC) {
                         || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_SHIFT))
                 && this.running
                 && GLFW.glfwGetMouseButton(window.handle(), GLFW.GLFW_MOUSE_BUTTON_1) == GLFW.GLFW_PRESS
-                && chronometer.hasAtLeastElapsed(delay.random() * 50L);
+                && chronometer.hasAtLeastElapsed(delay.random() * 50L)
     }
 }
 
 @Suppress("UNUSED")
 enum class ClickMode(
-    override val choiceName: String,
+    override val tag: String,
     val action: ClickAction
-) : NamedChoice {
+) : Tagged {
     QUICK_MOVE("QuickMove", { _, slot, callback ->
         callback(slot, slot.index, GLFW.GLFW_MOUSE_BUTTON_LEFT, ClickType.QUICK_MOVE)
     })
